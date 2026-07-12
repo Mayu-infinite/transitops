@@ -1,4 +1,6 @@
 // Role-based access control: navigation map + permission helpers.
+// Nav mirrors the Excalidraw mockup sidebar (Dashboard, Fleet, Drivers, Trips,
+// Maintenance, Fuel & Expenses, Analytics, Settings).
 import type { Role } from "./types";
 
 export interface NavItem {
@@ -12,14 +14,14 @@ export interface NavItem {
 
 /**
  * Application navigation. Each entry is gated by role; the app shell filters
- * this list against the signed-in user's role. These mirror the modules in the
- * TransitOps spec (dashboard, vehicles, drivers, trips, maintenance, finance).
+ * this list against the signed-in user's role. Gating is approximate for now —
+ * tighten against the Settings & RBAC matrix (mockup screen 8) during build.
  */
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   {
     href: "/vehicles",
-    label: "Vehicles",
+    label: "Fleet",
     roles: ["FLEET_MANAGER", "DRIVER", "FINANCIAL_ANALYST"],
   },
   {
@@ -43,10 +45,11 @@ export const NAV_ITEMS: NavItem[] = [
     roles: ["FINANCIAL_ANALYST", "FLEET_MANAGER"],
   },
   {
-    href: "/reports",
-    label: "Reports",
+    href: "/analytics",
+    label: "Analytics",
     roles: ["FINANCIAL_ANALYST", "FLEET_MANAGER", "SAFETY_OFFICER"],
   },
+  { href: "/settings", label: "Settings" },
 ];
 
 /** Whether a role may access an item (undefined role = not allowed). */
