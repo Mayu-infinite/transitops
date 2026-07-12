@@ -324,9 +324,29 @@ The schema is implemented using **Prisma ORM**, providing type-safe relational d
 
 ```text
 transitops/
-├── frontend/      # Next.js Application
-├── backend/       # NestJS API
-└── README.md
+├── frontend/                          # Next.js application (UI)
+│   ├── app/                           # App Router pages and layouts
+│   ├── components/                    # Reusable UI and domain components
+│   ├── lib/                           # API clients, authentication, RBAC, utilities
+│   │   └── api/                       # Module-wise API wrappers
+│   └── public/                        # Static assets
+│
+├── backend/                           # NestJS REST API
+│   ├── src/
+│   │   ├── auth/                      # Authentication, JWT, guards, roles
+│   │   ├── users/                     # User management
+│   │   ├── vehicles/                  # Fleet vehicle management
+│   │   ├── drivers/                   # Driver management
+│   │   ├── trips/                     # Trip lifecycle and dispatch
+│   │   ├── maintenance/               # Maintenance workflows
+│   │   ├── fuel-expenses/             # Fuel logs and expense tracking
+│   │   ├── reports/                   # Dashboard, analytics, exports
+│   │   └── prisma/                    # Prisma service and database module
+│   │
+│   └── prisma/                        # Prisma schema, migrations, seed data
+│
+├── docker-compose.yml                 # Local PostgreSQL setup
+└── README.md                          # Project documentation
 ```
 
 ---
