@@ -14,9 +14,4 @@ export class CompleteTripDto {
   @IsNumber()
   @IsPositive()
   finalOdometer: number;
-
-  @ApiProperty({ description: 'Fuel used during the trip' })
-  @IsNumber()
-  @IsPositive()
-  fuelUsed: number;
 }

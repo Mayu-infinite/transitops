@@ -27,8 +27,12 @@ export class MaintenanceService {
    */
   async openMaintenance(createMaintenanceDto: CreateMaintenanceDto) {
     const vehicle = await this.prisma.vehicle.findUnique({
-      where: {
-        id: createMaintenanceDto.vehicleId,
+      where: { id: createMaintenanceDto.vehicleId },
+      include: {
+        maintenances: {
+          where: { status: MaintenanceStatus.OPEN },
+          take: 1,
+        },
       },
     });
 
@@ -44,35 +48,21 @@ export class MaintenanceService {
       throw new ConflictException('Retired vehicles cannot enter maintenance.');
     }
 
-    const activeMaintenance = await this.prisma.maintenance.findFirst({
-      where: {
-        vehicleId: vehicle.id,
-        status: MaintenanceStatus.OPEN,
-      },
-    });
-
-    if (activeMaintenance) {
+    if (vehicle.maintenances.length > 0) {
       throw new ConflictException(
         'Vehicle already has an active maintenance record.',
       );
     }
 
-    return await this.prisma.$transaction(async (tx) => {
-      const maintenance = await tx.maintenance.create({
-        data: createMaintenanceDto,
-      });
+    const [maintenance] = await this.prisma.$transaction([
+      this.prisma.maintenance.create({ data: createMaintenanceDto }),
+      this.prisma.vehicle.update({
+        where: { id: vehicle.id },
+        data: { status: VehicleStatus.IN_SHOP },
+      }),
+    ]);
 
-      await tx.vehicle.update({
-        where: {
-          id: vehicle.id,
-        },
-        data: {
-          status: VehicleStatus.IN_SHOP,
-        },
-      });
-
-      return maintenance;
-    });
+    return maintenance;
   }
 
   /**
@@ -200,57 +190,48 @@ export class MaintenanceService {
       throw new ConflictException('Maintenance is already completed.');
     }
 
-    return await this.prisma.$transaction(async (tx) => {
-      const updatedMaintenance = await tx.maintenance.update({
-        where: {
-          id,
-        },
+    const updates: any[] = [
+      this.prisma.maintenance.update({
+        where: { id },
         data: {
           status: MaintenanceStatus.RESOLVED,
           endDate: new Date(),
         },
-      });
+      }),
+    ];
 
-      if (maintenance.vehicle.status !== VehicleStatus.RETIRED) {
-        await tx.vehicle.update({
-          where: {
-            id: maintenance.vehicleId,
-          },
-          data: {
-            status: VehicleStatus.AVAILABLE,
-          },
-        });
-      }
+    if (maintenance.vehicle.status !== VehicleStatus.RETIRED) {
+      updates.push(
+        this.prisma.vehicle.update({
+          where: { id: maintenance.vehicleId },
+          data: { status: VehicleStatus.AVAILABLE },
+        }),
+      );
+    }
 
-      return updatedMaintenance;
-    });
+    const [updatedMaintenance] = await this.prisma.$transaction(updates);
+    return updatedMaintenance;
   }
 
   /**
    * Dashboard Statistics
    */
   async getCounts() {
-    const [total, open, completed] = await Promise.all([
-      this.prisma.maintenance.count(),
+    const grouped = await this.prisma.maintenance.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    });
 
-      this.prisma.maintenance.count({
-        where: {
-          status: MaintenanceStatus.OPEN,
-        },
-      }),
+    const result = { total: 0, open: 0, completed: 0 };
 
-      this.prisma.maintenance.count({
-        where: {
-          status: MaintenanceStatus.RESOLVED,
-        },
-      }),
-    ]);
+    grouped.forEach((g) => {
+      const count = g._count.status;
+      result.total += count;
+      if (g.status === MaintenanceStatus.OPEN) result.open = count;
+      if (g.status === MaintenanceStatus.RESOLVED) result.completed = count;
+    });
 
-    return {
-      total,
-      open,
-      completed,
-    };
+    return result;
   }
 
   /**
