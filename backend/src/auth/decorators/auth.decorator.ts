@@ -1,9 +1,17 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
+
 import type { Role } from '@prisma/client';
+
+import { Roles } from './roles.decorator';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { RolesGuard } from '../guards/roles.guard';
 
 export function Auth(...roles: Role[]) {
-  const decorators = [UseGuards(JwtAuthGuard)];
+  const decorators = [UseGuards(JwtAuthGuard, RolesGuard)];
+
+  if (roles.length > 0) {
+    decorators.push(Roles(...roles));
+  }
 
   return applyDecorators(...decorators);
 }
