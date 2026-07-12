@@ -10,9 +10,9 @@ import { Button, Card, Input } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { QueryState } from "@/components/ui/query-state";
-import { VEHICLE_STATUS_TONE, type Vehicle, type VehicleStatus } from "@/lib/domain";
+import { VEHICLE_STATUS_TONE, type Vehicle, type VehicleStatus, type VehicleType } from "@/lib/domain";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { listVehicles } from "@/lib/api/vehicles";
+import { createVehicle, listVehicles } from "@/lib/api/vehicles";
 import { useApiData } from "@/lib/use-api";
 import { inr } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
@@ -69,6 +69,17 @@ const columns: Column<Vehicle>[] = [
 
 export default function VehiclesPage() {
   const [search, setSearch] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [name, setName] = useState("");
+  const [model, setModel] = useState("");
+  const [type, setType] = useState<VehicleType>("TRUCK");
+  const [maxLoadCapacity, setMaxLoadCapacity] = useState(0);
+  const [odometer, setOdometer] = useState(0);
+  const [acquisitionCost, setAcquisitionCost] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
   const { data, loading, error, reload } = useApiData<Vehicle[]>(() => listVehicles());
 
   const rows = useMemo(() => {
@@ -98,6 +109,40 @@ export default function VehiclesPage() {
       ]),
     );
 
+  const handleCreateVehicle = async () => {
+    setFormError(null);
+    if (!registrationNumber || !name || !model || !type || maxLoadCapacity <= 0 || odometer < 0 || acquisitionCost <= 0) {
+      setFormError("Please complete all vehicle fields with valid values.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await createVehicle({
+        registrationNumber,
+        name,
+        model,
+        type,
+        maxLoadCapacity,
+        odometer,
+        acquisitionCost,
+      });
+      setRegistrationNumber("");
+      setName("");
+      setModel("");
+      setType("TRUCK");
+      setMaxLoadCapacity(0);
+      setOdometer(0);
+      setAcquisitionCost(0);
+      setShowCreate(false);
+      reload();
+    } catch (err) {
+      setFormError("Unable to add vehicle. Please check your input and try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -108,10 +153,59 @@ export default function VehiclesPage() {
             <Button variant="secondary" size="sm" onPress={exportCsv} isDisabled={rows.length === 0}>
               Export CSV
             </Button>
-            <Button variant="primary" size="sm">+ Add Vehicle</Button>
+            <Button variant="primary" size="sm" onPress={() => setShowCreate((current) => !current)}>
+              {showCreate ? "Cancel" : "+ Add Vehicle"}
+            </Button>
           </>
         }
       />
+      {showCreate ? (
+        <Card className="mb-5 border border-border/80 bg-surface/95 p-5 shadow-sm shadow-black/5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input
+              placeholder="Reg. No."
+              aria-label="Registration number"
+              value={registrationNumber}
+              onChange={(e) => setRegistrationNumber(e.target.value)}
+            />
+            <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input placeholder="Model" value={model} onChange={(e) => setModel(e.target.value)} />
+            <Input
+              placeholder="Type"
+              value={type}
+              onChange={(e) => setType(e.target.value as VehicleType)}
+            />
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Max Load Capacity"
+              value={maxLoadCapacity || ""}
+              onChange={(e) => setMaxLoadCapacity(Number(e.target.value))}
+            />
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Odometer"
+              value={odometer || ""}
+              onChange={(e) => setOdometer(Number(e.target.value))}
+            />
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Acquisition Cost"
+              value={acquisitionCost || ""}
+              onChange={(e) => setAcquisitionCost(Number(e.target.value))}
+            />
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            <Button variant="primary" onPress={handleCreateVehicle} isDisabled={saving}>
+              {saving ? "Saving..." : "Save Vehicle"}
+            </Button>
+            {formError ? <span className="text-sm text-red-500">{formError}</span> : null}
+          </div>
+        </Card>
+      ) : null}
+
       <Card className="mb-5 border border-border/80 bg-surface/95 p-4">
         <Input
           placeholder="Search reg. no, name, model, type..."

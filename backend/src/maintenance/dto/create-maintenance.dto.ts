@@ -22,6 +22,14 @@ export class CreateMaintenanceDto {
   vehicleId: string;
 
   @ApiProperty({
+    example: 'user123abc456',
+    description: 'User ID who created the maintenance record',
+  })
+  @IsString()
+  @IsNotEmpty()
+  createdById: string;
+
+  @ApiProperty({
     example: 'Oil Change',
   })
   @IsString()

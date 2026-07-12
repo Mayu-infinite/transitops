@@ -22,6 +22,7 @@ export interface CreateDriverInput {
   licenseExpiry: string; // ISO date
   contactNumber: string;
   safetyScore?: number;
+  status?: DriverStatus;
 }
 
 export function createDriver(body: CreateDriverInput): Promise<Driver> {

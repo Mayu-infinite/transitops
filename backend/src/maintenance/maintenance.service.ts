@@ -186,7 +186,7 @@ export class MaintenanceService {
       throw new NotFoundException('Maintenance record not found.');
     }
 
-    if (maintenance.status === MaintenanceStatus.RESOLVED) {
+    if (maintenance.status === MaintenanceStatus.COMPLETED) {
       throw new ConflictException('Maintenance is already completed.');
     }
 
@@ -194,7 +194,7 @@ export class MaintenanceService {
       this.prisma.maintenance.update({
         where: { id },
         data: {
-          status: MaintenanceStatus.RESOLVED,
+          status: MaintenanceStatus.COMPLETED,
           endDate: new Date(),
         },
       }),
@@ -228,7 +228,7 @@ export class MaintenanceService {
       const count = g._count.status;
       result.total += count;
       if (g.status === MaintenanceStatus.OPEN) result.open = count;
-      if (g.status === MaintenanceStatus.RESOLVED) result.completed = count;
+      if (g.status === MaintenanceStatus.COMPLETED) result.completed = count;
     });
 
     return result;

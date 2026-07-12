@@ -11,7 +11,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { QueryState } from "@/components/ui/query-state";
 import { DRIVER_STATUS_TONE, type Driver, type DriverStatus } from "@/lib/domain";
-import { listDrivers } from "@/lib/api/drivers";
+import { createDriver, listDrivers } from "@/lib/api/drivers";
 import { useApiData } from "@/lib/use-api";
 import { fmtDate } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
@@ -46,6 +46,16 @@ const columns: Column<Driver>[] = [
 
 export default function DriversPage() {
   const [search, setSearch] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [licenseCategory, setLicenseCategory] = useState("");
+  const [licenseExpiry, setLicenseExpiry] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [safetyScore, setSafetyScore] = useState(80);
+  const [status, setStatus] = useState<DriverStatus>("AVAILABLE");
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const { data, loading, error, reload } = useApiData<Driver[]>(() => listDrivers());
 
   const rows = useMemo(() => {
@@ -74,6 +84,40 @@ export default function DriversPage() {
       ]),
     );
 
+  const createDriverProfile = async () => {
+    setFormError(null);
+    if (!name || !licenseNumber || !licenseCategory || !licenseExpiry || !contactNumber) {
+      setFormError("Please fill in all driver profile fields.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await createDriver({
+        name,
+        licenseNumber,
+        licenseCategory,
+        licenseExpiry,
+        contactNumber,
+        safetyScore,
+        status,
+      });
+      setName("");
+      setLicenseNumber("");
+      setLicenseCategory("");
+      setLicenseExpiry("");
+      setContactNumber("");
+      setSafetyScore(80);
+      setStatus("AVAILABLE");
+      setShowCreate(false);
+      reload();
+    } catch (err) {
+      setFormError("Unable to add driver. Please verify details and retry.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -84,12 +128,59 @@ export default function DriversPage() {
             <Button variant="secondary" size="sm" onPress={exportCsv} isDisabled={rows.length === 0}>
               Export CSV
             </Button>
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onPress={() => setShowCreate((current) => !current)}>
               + Add Driver
             </Button>
           </>
         }
       />
+
+      {showCreate ? (
+        <Card className="mb-5 border border-border/80 bg-surface/95 p-5 shadow-sm shadow-black/5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              placeholder="License Number"
+              value={licenseNumber}
+              onChange={(e) => setLicenseNumber(e.target.value)}
+            />
+            <Input
+              placeholder="License Category"
+              value={licenseCategory}
+              onChange={(e) => setLicenseCategory(e.target.value)}
+            />
+            <Input
+              type="date"
+              placeholder="License Expiry"
+              value={licenseExpiry}
+              onChange={(e) => setLicenseExpiry(e.target.value)}
+            />
+            <Input
+              placeholder="Contact Number"
+              value={contactNumber}
+              onChange={(e) => setContactNumber(e.target.value)}
+            />
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Safety Score"
+              value={safetyScore || ""}
+              onChange={(e) => setSafetyScore(Number(e.target.value))}
+            />
+            <Input
+              placeholder="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as DriverStatus)}
+            />
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            <Button variant="primary" onPress={createDriverProfile} isDisabled={saving}>
+              {saving ? "Saving..." : "Save Driver"}
+            </Button>
+            {formError ? <span className="text-sm text-red-500">{formError}</span> : null}
+          </div>
+        </Card>
+      ) : null}
 
       <Card className="mb-5 border border-border/80 bg-surface/95 p-4">
         <Input
