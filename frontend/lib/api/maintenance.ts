@@ -30,6 +30,7 @@ export interface CreateMaintenanceInput {
   cost: number;
   startDate: string; // ISO date
   status?: MaintenanceStatus;
+  createdById: string;
 }
 
 export function createMaintenance(body: CreateMaintenanceInput): Promise<MaintenanceRecord> {
