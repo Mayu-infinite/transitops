@@ -7,7 +7,6 @@ import {
 } from 'class-validator';
 import { ExpenseType } from '@prisma/client';
 
-// ponytail: minimum valid DTO
 export class CreateExpenseDto {
   @IsString()
   vehicleId: string;

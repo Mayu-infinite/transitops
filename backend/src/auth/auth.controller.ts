@@ -5,11 +5,12 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { Auth } from './decorators/auth.decorator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthenticatedUser } from './strategies/jwt.strategy';
 
@@ -24,7 +25,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @Auth()
+  @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: AuthenticatedUser): Promise<AuthenticatedUser> {
     return await Promise.resolve(user);
   }
