@@ -1,17 +1,50 @@
 /* TransitOps global styles.
- * HeroUI v3 is built on Tailwind CSS v4. The HeroUI stylesheet already pulls in
- * `@import "tailwindcss"`, so importing it is enough to get the full utility set
- * plus the HeroUI theme tokens and component styles. */
+ * HeroUI v3 (Tailwind CSS v4). Importing the HeroUI stylesheet pulls in
+ * Tailwind + the theme tokens + component styles. */
 @import "@heroui/styles";
 
-/* Enable class-based dark mode so our own `dark:` utilities follow the same
- * `.dark` class HeroUI toggles on the <html> element (see ThemeProvider). */
+/* Class-based dark mode so our `dark:` utilities follow the `.dark` class
+ * HeroUI toggles on <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Scan our source for utility classes. */
 @source "./";
 @source "../components/";
 @source "../lib/";
+
+/* -- Brand palette override -------------------------------------------------
+ * HeroUI derives accent-hover / accent-soft / focus rings from the base
+ * `--accent` via color-mix, so overriding just the base recolors buttons,
+ * active nav, focus rings, links, etc. These are UNLAYERED, so they win over
+ * HeroUI's layered theme defaults regardless of import order.
+ * TransitOps brand = operational blue. */
+:root,
+[data-theme="light"],
+[data-theme="default"] {
+  --accent: oklch(0.58 0.19 255);
+  --accent-foreground: oklch(0.99 0.01 255);
+  --focus: var(--accent);
+  --link: oklch(0.54 0.18 255);
+  --background: oklch(0.98 0.01 255);
+  --surface: oklch(1 0 0);
+  --surface-secondary: oklch(0.96 0.015 255);
+  --border: oklch(0.9 0.02 255);
+}
+
+.dark,
+[data-theme="dark"] {
+  --accent: oklch(0.68 0.17 252);
+  --accent-foreground: oklch(0.18 0.04 255);
+  --focus: var(--accent);
+  --link: var(--accent);
+  --background: oklch(0.15 0.025 255);
+  --surface: oklch(0.19 0.026 255);
+  --surface-secondary: oklch(0.23 0.03 255);
+  --surface-tertiary: oklch(0.28 0.035 255);
+  --border: oklch(0.33 0.035 255);
+  --border-secondary: oklch(0.4 0.045 255);
+  --muted: oklch(0.72 0.03 255);
+}
 
 html,
 body {
@@ -20,4 +53,7 @@ body {
 
 body {
   min-height: 100%;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }

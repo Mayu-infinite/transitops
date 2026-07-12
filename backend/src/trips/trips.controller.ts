@@ -10,9 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import { TripsService } from './trips.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto, CompleteTripDto } from './dto/update-trip.dto';
@@ -20,14 +18,12 @@ import { QueryTripDto } from './dto/query-trip.dto';
 
 @ApiTags('Trips')
 @ApiBearerAuth()
-@UseGuards(RolesGuard)
 @Controller('trips')
 export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({ summary: 'Create a new trip (DRAFT)' })
+    @ApiOperation({ summary: 'Create a new trip (DRAFT)' })
   create(@Body() dto: CreateTripDto) {
     return this.tripsService.create(dto);
   }
@@ -63,29 +59,25 @@ export class TripsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({ summary: 'Update trip details' })
+    @ApiOperation({ summary: 'Update trip details' })
   update(@Param('id') id: string, @Body() dto: UpdateTripDto) {
     return this.tripsService.update(id, dto);
   }
 
   @Post(':id/dispatch')
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({ summary: 'Dispatch a trip' })
+    @ApiOperation({ summary: 'Dispatch a trip' })
   dispatch(@Param('id') id: string) {
     return this.tripsService.dispatch(id);
   }
 
   @Post(':id/complete')
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({ summary: 'Complete a trip' })
+    @ApiOperation({ summary: 'Complete a trip' })
   complete(@Param('id') id: string, @Body() dto: CompleteTripDto) {
     return this.tripsService.complete(id, dto);
   }
 
   @Post(':id/cancel')
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({ summary: 'Cancel a trip' })
+    @ApiOperation({ summary: 'Cancel a trip' })
   cancel(@Param('id') id: string) {
     return this.tripsService.cancel(id);
   }

@@ -4,22 +4,26 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+
+  url      =   env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMIN
+enum Role {
   FLEET_MANAGER
   DISPATCHER
+  SAFETY_OFFICER
+  FINANCIAL_ANALYST
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
+  name         String
   email        String   @unique
   passwordHash String
-  name         String
-  role         UserRole @default(DISPATCHER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         Role
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   trips       Trip[]
   maintenance Maintenance[]

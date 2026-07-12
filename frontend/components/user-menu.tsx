@@ -18,11 +18,15 @@ export function UserMenu() {
   return (
     <div className="flex items-center gap-3">
       <div className="hidden text-right sm:block">
-        <p className="text-sm font-medium leading-tight">{user.name}</p>
-        <p className="text-xs text-muted">{ROLE_LABELS[user.role]}</p>
+        <p className="text-sm font-medium leading-tight text-foreground">
+          {user.name}
+        </p>
+        <p className="text-xs leading-tight text-muted">
+          {ROLE_LABELS[user.role]}
+        </p>
       </div>
       <div
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground ring-2 ring-accent/20"
         aria-hidden="true"
       >
         {initials(user.name)}

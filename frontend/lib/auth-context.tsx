@@ -1,7 +1,7 @@
 "use client";
 
 // Client-side authentication state. Holds the signed-in user, exposes
-// login/register/logout, and hydrates from the stored session on mount.
+// login/logout, and hydrates from the stored session on mount.
 import {
   createContext,
   useCallback,
@@ -18,7 +18,7 @@ import {
   saveSession,
   saveUser,
 } from "./session";
-import type { LoginPayload, RegisterPayload, User } from "./types";
+import type { LoginPayload, User } from "./types";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -26,7 +26,6 @@ interface AuthContextValue {
   user: User | null;
   status: AuthStatus;
   login: (payload: LoginPayload) => Promise<User>;
-  register: (payload: RegisterPayload) => Promise<User>;
   logout: () => void;
 }
 
@@ -39,35 +38,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Hydrate from storage on first mount, then refresh the profile in the
   // background so a revoked/expired token gets cleared.
   useEffect(() => {
-    const token = getToken();
-    const stored = getStoredUser();
-
-    if (!token || !stored) {
-      setStatus("unauthenticated");
-      return;
-    }
-
-    setUser(stored);
-    setStatus("authenticated");
-
     let cancelled = false;
-    authApi
-      .me()
-      .then((fresh) => {
-        if (cancelled) return;
-        setUser(fresh);
-        saveUser(fresh);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        // Only sign out on a real auth rejection; keep the session on network
-        // errors so the app still works while the backend is unavailable.
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-          clearSession();
-          setUser(null);
-          setStatus("unauthenticated");
-        }
-      });
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      const token = getToken();
+      const stored = getStoredUser();
+
+      if (!token || !stored) {
+        setStatus("unauthenticated");
+        return;
+      }
+
+      setUser(stored);
+      setStatus("authenticated");
+
+      authApi
+        .me()
+        .then((fresh) => {
+          if (cancelled) return;
+          setUser(fresh);
+          saveUser(fresh);
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          // Only sign out on a real auth rejection; keep the session on network
+          // errors so the app still works while the backend is unavailable.
+          if (
+            err instanceof ApiError &&
+            (err.status === 401 || err.status === 403)
+          ) {
+            clearSession();
+            setUser(null);
+            setStatus("unauthenticated");
+          }
+        });
+    });
 
     return () => {
       cancelled = true;
@@ -82,14 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return loggedIn;
   }, []);
 
-  const register = useCallback(async (payload: RegisterPayload) => {
-    const { accessToken, user: created } = await authApi.register(payload);
-    saveSession(accessToken, created);
-    setUser(created);
-    setStatus("authenticated");
-    return created;
-  }, []);
-
   const logout = useCallback(() => {
     clearSession();
     setUser(null);
@@ -97,8 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, status, login, register, logout }),
-    [user, status, login, register, logout],
+    () => ({ user, status, login, logout }),
+    [user, status, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

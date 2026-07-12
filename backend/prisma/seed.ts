@@ -4,42 +4,40 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-  console.log('🌱 Starting database seed...');
+  const email = 'fleetmanager@transitops.com';
+  const password = 'admin123';
 
-  const adminEmail = 'admin@transitops.com';
-  const adminPassword = 'admin123';
-
-  const existingAdmin = await prisma.user.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: {
-      email: adminEmail,
+      email,
     },
   });
 
-  if (existingAdmin) {
-    console.log('✅ Admin user already exists.');
+  if (existingUser) {
+    console.warn('Fleet Manager already exists.');
     return;
   }
 
-  const passwordHash = await bcrypt.hash(adminPassword, 10);
+  const passwordHash = await bcrypt.hash(password, 10);
 
   await prisma.user.create({
     data: {
-      name: 'Administrator',
-      email: adminEmail,
+      name: 'Fleet Manager',
+      email,
       passwordHash,
-      role: Role.ADMIN,
+      role: Role.FLEET_MANAGER,
     },
   });
 
-  console.log('✅ Admin user created successfully.');
+  console.warn('Fleet Manager created successfully.');
 }
 
 main()
   .catch((error: unknown) => {
-    console.error('❌ Database seed failed.');
+    console.error('Database seed failed.');
 
     if (error instanceof Error) {
-      console.error(error.message);
+      console.error(error);
     }
 
     process.exit(1);
