@@ -13,10 +13,8 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
+import { Role } from '@prisma/client';
 
-import { Roles } from '../common/decorators/roles.decorator';
-import { RolesGuard } from '../common/guards/roles.guard';
 
 import { MaintenanceService } from './maintenance.service';
 
@@ -26,7 +24,6 @@ import { QueryMaintenanceDto } from './dto/query-maintenance.dto';
 
 @ApiTags('Maintenance')
 @ApiBearerAuth()
-@UseGuards(RolesGuard)
 @Controller('maintenance')
 export class MaintenanceController {
   constructor(
@@ -50,8 +47,7 @@ export class MaintenanceController {
   }
 
   @Post()
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({
+    @ApiOperation({
     summary:
       'Open maintenance and automatically move vehicle to IN_SHOP',
   })
@@ -62,8 +58,7 @@ export class MaintenanceController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({
+    @ApiOperation({
     summary: 'Update maintenance record',
   })
   update(
@@ -74,8 +69,7 @@ export class MaintenanceController {
   }
 
   @Patch(':id/close')
-  @Roles(UserRole.FLEET_MANAGER)
-  @ApiOperation({
+    @ApiOperation({
     summary:
       'Close maintenance and restore vehicle availability',
   })
