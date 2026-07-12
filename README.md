@@ -180,28 +180,21 @@ http://localhost:3001
 
 ---
 
-# 🔐 Environment Variables
+## 🔐 Environment Variables
 
-## Backend (.env)
+Copy the example environment files and update the values as needed.
 
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fleet
+### Backend
 
-JWT_SECRET=your_jwt_secret
-
-JWT_EXPIRES_IN=7d
-
-PORT=3000
-
-CORS_ORIGIN=http://localhost:3001,http://localhost:3000
+```bash
+cp .env.example .env
 ```
 
-## Frontend (.env.local)
+### Frontend
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3000
+```bash
+cp .env.example .env.local
 ```
-
 ---
 
 # 🧩 Backend Modules
