@@ -203,46 +203,21 @@ export class DriversService {
    * Dashboard counts
    */
   async getCounts() {
+    // ponytail: simplified counts
     const [
       total,
       available,
       onTrip,
-      offDuty,
-      suspended,
+      onLeave,
+      terminated,
     ] = await Promise.all([
       this.prisma.driver.count(),
-
-      this.prisma.driver.count({
-        where: {
-          status: DriverStatus.AVAILABLE,
-        },
-      }),
-
-      this.prisma.driver.count({
-        where: {
-          status: DriverStatus.ON_TRIP,
-        },
-      }),
-
-      this.prisma.driver.count({
-        where: {
-          status: DriverStatus.OFF_DUTY,
-        },
-      }),
-
-      this.prisma.driver.count({
-        where: {
-          status: DriverStatus.SUSPENDED,
-        },
-      }),
+      this.prisma.driver.count({ where: { status: DriverStatus.AVAILABLE } }),
+      this.prisma.driver.count({ where: { status: DriverStatus.ON_TRIP } }),
+      this.prisma.driver.count({ where: { status: DriverStatus.ON_LEAVE } }),
+      this.prisma.driver.count({ where: { status: DriverStatus.TERMINATED } }),
     ]);
 
-    return {
-      total,
-      available,
-      onTrip,
-      offDuty,
-      suspended,
-    };
+    return { total, available, onTrip, onLeave, terminated };
   }
 }
