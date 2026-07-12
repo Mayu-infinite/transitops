@@ -53,13 +53,6 @@ export class CreateMaintenanceDto {
   startDate: Date;
 
   @ApiProperty({
-    description: 'User ID who created the maintenance record',
-  })
-  @IsString()
-  @IsNotEmpty()
-  createdById: string;
-
-  @ApiProperty({
     enum: MaintenanceStatus,
     default: MaintenanceStatus.OPEN,
     required: false,
