@@ -1,7 +1,6 @@
 // Thin fetch wrapper around the TransitOps NestJS backend.
 //
 // Expected backend contract (JWT bearer auth):
-//   POST /auth/register  { name, email, password, role } -> { accessToken, user }
 //   POST /auth/login     { email, password }             -> { accessToken, user }
 //   GET  /auth/me        (Authorization: Bearer <token>) -> user
 //
@@ -10,7 +9,6 @@ import { getToken } from "./session";
 import type {
   AuthResponse,
   LoginPayload,
-  RegisterPayload,
   User,
 } from "./types";
 
@@ -85,12 +83,6 @@ function extractErrorMessage(data: unknown): string | null {
 export const authApi = {
   login(payload: LoginPayload) {
     return request<AuthResponse>("/auth/login", {
-      method: "POST",
-      body: payload,
-    });
-  },
-  register(payload: RegisterPayload) {
-    return request<AuthResponse>("/auth/register", {
       method: "POST",
       body: payload,
     });

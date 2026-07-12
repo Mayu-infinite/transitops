@@ -9,7 +9,7 @@ import { TOKEN_COOKIE } from "@/lib/session";
 // request and re-checked client-side once the token is validated.
 
 // Public routes that must stay reachable without a session.
-const AUTH_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/login"];
 
 function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some(
