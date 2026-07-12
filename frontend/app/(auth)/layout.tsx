@@ -34,8 +34,8 @@ export default function AuthLayout({
   }
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[0.82fr_1fr]">
-      <aside className="relative hidden overflow-hidden bg-surface-secondary p-10 text-foreground lg:flex lg:flex-col xl:p-14">
+    <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
+      <aside className="relative hidden overflow-hidden bg-surface-secondary p-6 text-foreground lg:flex lg:flex-col xl:p-10">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-90 [background:linear-gradient(145deg,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_42%),radial-gradient(70%_50%_at_10%_0%,color-mix(in_oklab,var(--accent)_28%,transparent),transparent)]"
@@ -48,7 +48,7 @@ export default function AuthLayout({
         <div className="relative z-10 flex h-full flex-col">
           <Logo size="lg" />
 
-          <div className="mt-auto max-w-md">
+          <div className="mt-auto max-w-full">
             <h2 className="text-3xl font-semibold leading-tight xl:text-4xl">
               Smart transport operations, secured by role.
             </h2>
@@ -57,7 +57,7 @@ export default function AuthLayout({
               expenses, and analytics with RBAC-aware navigation.
             </p>
 
-            <Card className="mt-10 border border-border/80 bg-background/60 p-5 shadow-sm shadow-black/5">
+            <Card className="mt-10 rounded-none border border-border/80 bg-background/60 p-5 shadow-sm shadow-black/5">
               <p className="text-xs font-semibold uppercase text-muted">
                 One login, four operating roles
               </p>
@@ -97,7 +97,7 @@ export default function AuthLayout({
         </header>
 
         <div className="flex flex-1 items-center justify-center px-6 pb-12 sm:px-10">
-          <div className="w-full max-w-sm">{children}</div>
+          <div className="w-full max-w-[38rem]">{children}</div>
         </div>
       </main>
     </div>

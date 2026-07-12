@@ -4,11 +4,22 @@
 
 // ── Status unions (match the spec / mockup badges) ──────────────────────────
 export type VehicleStatus = "AVAILABLE" | "ON_TRIP" | "IN_SHOP" | "RETIRED";
-export type DriverStatus = "AVAILABLE" | "ON_TRIP" | "OFF_DUTY" | "SUSPENDED";
+export type DriverStatus = "AVAILABLE" | "ON_TRIP" | "ON_LEAVE" | "TERMINATED";
 export type TripStatus = "DRAFT" | "DISPATCHED" | "COMPLETED" | "CANCELLED";
-export type MaintenanceStatus = "ACTIVE" | "COMPLETED";
-export type VehicleType = "VAN" | "TRUCK" | "MINI" | "CAR" | "BUS";
-export type ExpenseType = "TOLL" | "FUEL" | "MAINTENANCE" | "MISC";
+export type MaintenanceStatus =
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "CANCELLED";
+export type VehicleType =
+  | "VAN"
+  | "TRUCK"
+  | "BUS"
+  | "MOTORCYCLE"
+  | "PICKUP"
+  | "TRAILER"
+  | "OTHER";
+export type ExpenseType = "TOLL" | "INSURANCE" | "OTHER";
 
 // ── Badge tones (map a status -> a colour used by <StatusBadge>) ────────────
 export type BadgeTone = "success" | "info" | "warning" | "danger" | "neutral";
@@ -22,14 +33,20 @@ export const VEHICLE_STATUS_TONE: Record<VehicleStatus, BadgeTone> = {
 export const DRIVER_STATUS_TONE: Record<DriverStatus, BadgeTone> = {
   AVAILABLE: "success",
   ON_TRIP: "info",
-  OFF_DUTY: "neutral",
-  SUSPENDED: "warning",
+  ON_LEAVE: "neutral",
+  TERMINATED: "danger",
 };
 export const TRIP_STATUS_TONE: Record<TripStatus, BadgeTone> = {
   DRAFT: "neutral",
   DISPATCHED: "info",
   COMPLETED: "success",
   CANCELLED: "danger",
+};
+export const MAINTENANCE_STATUS_TONE: Record<MaintenanceStatus, BadgeTone> = {
+  OPEN: "warning",
+  IN_PROGRESS: "info",
+  RESOLVED: "success",
+  CANCELLED: "neutral",
 };
 
 // ── Entities ────────────────────────────────────────────────────────────────

@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto, CompleteTripDto } from './dto/update-trip.dto';
 import { QueryTripDto } from './dto/query-trip.dto';
-import { TripStatus, VehicleStatus, DriverStatus } from '@prisma/client';
+import { Prisma, TripStatus, VehicleStatus, DriverStatus } from '@prisma/client';
 
 @Injectable()
 export class TripsService {
@@ -42,7 +42,7 @@ export class TripsService {
       data: {
         ...dto,
         status: TripStatus.DRAFT,
-      },
+      } as Prisma.TripUncheckedCreateInput,
     });
   }
 

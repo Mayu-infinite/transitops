@@ -6,13 +6,13 @@
  */
 export type Role =
   | "FLEET_MANAGER"
-  | "DRIVER"
+  | "DISPATCHER"
   | "SAFETY_OFFICER"
   | "FINANCIAL_ANALYST";
 
 export const ROLES: Role[] = [
   "FLEET_MANAGER",
-  "DRIVER",
+  "DISPATCHER",
   "SAFETY_OFFICER",
   "FINANCIAL_ANALYST",
 ];
@@ -20,7 +20,7 @@ export const ROLES: Role[] = [
 /** Human-readable labels for each role. */
 export const ROLE_LABELS: Record<Role, string> = {
   FLEET_MANAGER: "Fleet Manager",
-  DRIVER: "Driver",
+  DISPATCHER: "Dispatcher",
   SAFETY_OFFICER: "Safety Officer",
   FINANCIAL_ANALYST: "Financial Analyst",
 };
@@ -28,7 +28,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 /** Short description of what each role is responsible for. */
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   FLEET_MANAGER: "Oversees fleet assets, maintenance, and vehicle lifecycle.",
-  DRIVER: "Creates trips, assigns vehicles, and monitors deliveries.",
+  DISPATCHER: "Creates trips, assigns vehicles, and monitors deliveries.",
   SAFETY_OFFICER: "Tracks driver compliance, licenses, and safety scores.",
   FINANCIAL_ANALYST: "Reviews expenses, fuel, maintenance costs, and ROI.",
 };

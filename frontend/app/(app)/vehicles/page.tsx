@@ -50,7 +50,7 @@ const VEHICLES: Vehicle[] = [
     registrationNumber: "DL-08-MINI-03",
     name: "Mini Cargo",
     model: "Ashok Dost",
-    type: "MINI",
+    type: "PICKUP",
     maxLoadCapacity: 1200,
     odometer: 66000,
     acquisitionCost: 490000,
@@ -129,8 +129,13 @@ export default function VehiclesPage() {
             <Select.Popover>
               <ListBox>
                 <ListBox.Item id="all">All Types</ListBox.Item>
-                <ListBox.Item id="van">Van</ListBox.Item>
-                <ListBox.Item id="truck">Truck</ListBox.Item>
+                <ListBox.Item id="VAN">Van</ListBox.Item>
+                <ListBox.Item id="TRUCK">Truck</ListBox.Item>
+                <ListBox.Item id="BUS">Bus</ListBox.Item>
+                <ListBox.Item id="MOTORCYCLE">Motorcycle</ListBox.Item>
+                <ListBox.Item id="PICKUP">Pickup</ListBox.Item>
+                <ListBox.Item id="TRAILER">Trailer</ListBox.Item>
+                <ListBox.Item id="OTHER">Other</ListBox.Item>
               </ListBox>
             </Select.Popover>
           </Select>

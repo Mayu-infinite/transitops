@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Spinner } from "@heroui/react";
+import { Button, SearchField, Spinner } from "@heroui/react";
 import { useAuth } from "@/lib/auth-context";
 import { AppSidebar } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
@@ -77,21 +77,13 @@ export default function AppLayout({
           </Button>
 
           {/* Search */}
-          <div className="relative w-full max-w-md">
-            <svg
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
-              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="search"
-              placeholder="Search…"
-              aria-label="Search"
-              className="h-9 w-full rounded-lg border border-border bg-surface pl-9 pr-3 text-sm text-foreground placeholder:text-muted outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
-            />
-          </div>
+          <SearchField aria-label="Search" className="w-full max-w-md">
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Search…" />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
 
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />

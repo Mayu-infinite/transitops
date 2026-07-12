@@ -22,7 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     href: "/vehicles",
     label: "Fleet",
-    roles: ["FLEET_MANAGER", "DRIVER", "FINANCIAL_ANALYST"],
+    roles: ["FLEET_MANAGER", "DISPATCHER", "FINANCIAL_ANALYST"],
   },
   {
     href: "/drivers",
@@ -32,7 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     href: "/trips",
     label: "Trips",
-    roles: ["DRIVER", "FLEET_MANAGER"],
+    roles: ["DISPATCHER", "FLEET_MANAGER"],
   },
   {
     href: "/maintenance",
