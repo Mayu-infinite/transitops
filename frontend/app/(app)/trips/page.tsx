@@ -5,6 +5,7 @@
 // Live Board + Create Trip form. Vehicle/driver options and the board are live;
 // dispatch/complete/cancel flip statuses server-side.
 // ─────────────────────────────────────────────────────────────────────────
+import { useState } from "react";
 import { Button, Card, Input, Label, ListBox, Select } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -16,9 +17,10 @@ import {
   type TripStatus,
   type Vehicle,
 } from "@/lib/domain";
-import { listTrips } from "@/lib/api/trips";
+import { createTrip, dispatchTrip, listTrips } from "@/lib/api/trips";
 import { listVehicles } from "@/lib/api/vehicles";
 import { listDrivers } from "@/lib/api/drivers";
+import { useAuth } from "@/lib/auth-context";
 import { useApiData } from "@/lib/use-api";
 
 const LIFECYCLE = ["Draft", "Dispatched", "Completed", "Cancelled"];
@@ -38,6 +40,15 @@ interface TripsData {
 }
 
 export default function TripsPage() {
+  const { user } = useAuth();
+  const [source, setSource] = useState("");
+  const [destination, setDestination] = useState("");
+  const [vehicleId, setVehicleId] = useState("");
+  const [driverId, setDriverId] = useState("");
+  const [cargoWeight, setCargoWeight] = useState(0);
+  const [plannedDistance, setPlannedDistance] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const { data, loading, error, reload } = useApiData<TripsData>(async () => {
     const [trips, vehicles, drivers] = await Promise.all([
       listTrips() as Promise<TripWithRelations[]>,
@@ -50,6 +61,48 @@ export default function TripsPage() {
   const availableVehicles = (data?.vehicles ?? []).filter((v) => v.status === "AVAILABLE");
   const availableDrivers = (data?.drivers ?? []).filter((d) => d.status === "AVAILABLE");
   const trips = data?.trips ?? [];
+
+  const resetForm = () => {
+    setSource("");
+    setDestination("");
+    setVehicleId("");
+    setDriverId("");
+    setCargoWeight(0);
+    setPlannedDistance(0);
+    setFormError(null);
+  };
+
+  const createAndDispatchTrip = async () => {
+    setFormError(null);
+    if (!user?.id) {
+      setFormError("You must be logged in to create a trip.");
+      return;
+    }
+    if (!source || !destination || !vehicleId || !driverId || cargoWeight <= 0 || plannedDistance <= 0) {
+      setFormError("Please complete all trip fields before dispatching.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const trip = await createTrip({
+        source,
+        destination,
+        vehicleId,
+        driverId,
+        cargoWeight,
+        plannedDistance,
+        createdBy: user.id,
+      }).then((created) => dispatchTrip(created.id));
+      if (trip) {
+        resetForm();
+        reload();
+      }
+    } catch (err) {
+      setFormError("Unable to dispatch trip. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -77,9 +130,13 @@ export default function TripsPage() {
         <Card className="border border-border/80 bg-surface/95 p-5 shadow-sm shadow-black/5">
           <h2 className="text-sm font-semibold text-foreground">Create Trip</h2>
           <div className="mt-4 grid gap-3">
-            <Input placeholder="Source" aria-label="Source" />
-            <Input placeholder="Destination" aria-label="Destination" />
-            <Select placeholder="Available vehicle">
+            <Input placeholder="Source" aria-label="Source" value={source} onChange={(e) => setSource(e.target.value)} />
+            <Input placeholder="Destination" aria-label="Destination" value={destination} onChange={(e) => setDestination(e.target.value)} />
+            <Select
+              placeholder="Available vehicle"
+              selectedKey={vehicleId}
+              onSelectionChange={(key) => setVehicleId(String(key))}
+            >
               <Label>Available vehicle</Label>
               <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
               <Select.Popover>
@@ -98,7 +155,11 @@ export default function TripsPage() {
                 </ListBox>
               </Select.Popover>
             </Select>
-            <Select placeholder="Available driver">
+            <Select
+              placeholder="Available driver"
+              selectedKey={driverId}
+              onSelectionChange={(key) => setDriverId(String(key))}
+            >
               <Label>Available driver</Label>
               <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
               <Select.Popover>
@@ -118,17 +179,32 @@ export default function TripsPage() {
               </Select.Popover>
             </Select>
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Cargo kg" aria-label="Cargo weight" />
-              <Input placeholder="Distance km" aria-label="Planned distance" />
+              <Input
+                type="number"
+                inputMode="numeric"
+                placeholder="Cargo kg"
+                aria-label="Cargo weight"
+                value={cargoWeight || ""}
+                onChange={(e) => setCargoWeight(Number(e.target.value))}
+              />
+              <Input
+                type="number"
+                inputMode="numeric"
+                placeholder="Distance km"
+                aria-label="Planned distance"
+                value={plannedDistance || ""}
+                onChange={(e) => setPlannedDistance(Number(e.target.value))}
+              />
             </div>
             <Card className="border border-sky-500/30 bg-sky-500/10 p-3">
               <p className="text-xs font-medium text-sky-500">
                 Capacity check: cargo weight must not exceed selected vehicle capacity.
               </p>
             </Card>
-            <Button variant="primary" fullWidth>
+            <Button variant="primary" fullWidth onPress={createAndDispatchTrip} isDisabled={saving}>
               Dispatch Trip
             </Button>
+            {formError ? <p className="text-sm text-red-500">{formError}</p> : null}
           </div>
         </Card>
 

@@ -6,11 +6,7 @@
 export type VehicleStatus = "AVAILABLE" | "ON_TRIP" | "IN_SHOP" | "RETIRED";
 export type DriverStatus = "AVAILABLE" | "ON_TRIP" | "ON_LEAVE" | "TERMINATED";
 export type TripStatus = "DRAFT" | "DISPATCHED" | "COMPLETED" | "CANCELLED";
-export type MaintenanceStatus =
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "RESOLVED"
-  | "CANCELLED";
+export type MaintenanceStatus = "OPEN" | "IN_PROGRESS" | "COMPLETED";
 export type VehicleType =
   | "VAN"
   | "TRUCK"
@@ -45,8 +41,7 @@ export const TRIP_STATUS_TONE: Record<TripStatus, BadgeTone> = {
 export const MAINTENANCE_STATUS_TONE: Record<MaintenanceStatus, BadgeTone> = {
   OPEN: "warning",
   IN_PROGRESS: "info",
-  RESOLVED: "success",
-  CANCELLED: "neutral",
+  COMPLETED: "success",
 };
 
 // ── Entities ────────────────────────────────────────────────────────────────
