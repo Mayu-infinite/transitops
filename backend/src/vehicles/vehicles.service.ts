@@ -38,7 +38,7 @@ export class VehiclesService {
    * Get All Vehicles
    */
   async findAll() {
-    return this.prisma.vehicle.findMany({
+    return await this.prisma.vehicle.findMany({
       orderBy: {
         createdAt: 'desc',
       },
@@ -108,7 +108,7 @@ export class VehiclesService {
   async retire(id: string) {
     await this.findOne(id);
 
-    return this.prisma.vehicle.update({
+    return await this.prisma.vehicle.update({
       where: { id },
       data: { status: VehicleStatus.RETIRED },
     });
@@ -123,7 +123,7 @@ export class VehiclesService {
    * - ON_TRIP
    */
   async findDispatchEligible() {
-    return this.prisma.vehicle.findMany({
+    return await this.prisma.vehicle.findMany({
       where: {
         status: VehicleStatus.AVAILABLE,
       },
@@ -138,10 +138,10 @@ export class VehiclesService {
    */
   async search(search?: string) {
     if (!search) {
-      return this.findAll();
+      return await this.findAll();
     }
 
-    return this.prisma.vehicle.findMany({
+    return await this.prisma.vehicle.findMany({
       where: {
         OR: [
           {

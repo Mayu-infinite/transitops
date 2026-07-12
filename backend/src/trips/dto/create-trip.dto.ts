@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, IsString, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateTripDto {
   @ApiProperty({ description: 'Vehicle ID' })
@@ -32,8 +38,8 @@ export class CreateTripDto {
   @IsPositive()
   plannedDistance: number;
 
-  @ApiProperty({ description: 'User ID who created the trip', required: false })
+  @ApiProperty({ description: 'User ID who created the trip' })
   @IsString()
-  @IsOptional()
-  createdBy?: string;
+  @IsNotEmpty()
+  createdBy: string;
 }

@@ -7,7 +7,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsPhoneNumber,
-  IsPositive,
   IsString,
   Max,
   MaxLength,

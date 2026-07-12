@@ -3,10 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  DriverStatus,
-  Prisma,
-} from '@prisma/client';
+import { DriverStatus, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -31,9 +28,7 @@ export class DriversService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new ConflictException(
-          'License number already exists.',
-        );
+        throw new ConflictException('License number already exists.');
       }
 
       throw error;
@@ -44,12 +39,7 @@ export class DriversService {
    * List Drivers
    */
   async findAll(query: QueryDriverDto) {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      status,
-    } = query;
+    const { page = 1, limit = 10, search, status } = query;
 
     const skip = (page - 1) * limit;
 
@@ -112,9 +102,7 @@ export class DriversService {
     });
 
     if (!driver) {
-      throw new NotFoundException(
-        'Driver not found.',
-      );
+      throw new NotFoundException('Driver not found.');
     }
 
     return driver;
@@ -123,10 +111,7 @@ export class DriversService {
   /**
    * Update Driver
    */
-  async update(
-    id: string,
-    updateDriverDto: UpdateDriverDto,
-  ) {
+  async update(id: string, updateDriverDto: UpdateDriverDto) {
     await this.findOne(id);
 
     try {
@@ -141,15 +126,12 @@ export class DriversService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new ConflictException(
-          'License number already exists.',
-        );
+        throw new ConflictException('License number already exists.');
       }
 
       throw error;
     }
   }
-
 
   /**
    * Drivers eligible for dispatch
@@ -159,7 +141,7 @@ export class DriversService {
    * - License not expired
    */
   async findDispatchEligible() {
-    return this.prisma.driver.findMany({
+    return await this.prisma.driver.findMany({
       where: {
         status: DriverStatus.AVAILABLE,
 
@@ -185,7 +167,7 @@ export class DriversService {
 
     expiry.setDate(today.getDate() + days);
 
-    return this.prisma.driver.findMany({
+    return await this.prisma.driver.findMany({
       where: {
         licenseExpiry: {
           gte: today,
@@ -203,13 +185,7 @@ export class DriversService {
    * Dashboard counts
    */
   async getCounts() {
-    const [
-      total,
-      available,
-      onTrip,
-      onLeave,
-      terminated,
-    ] = await Promise.all([
+    const [total, available, onTrip, onLeave, terminated] = await Promise.all([
       this.prisma.driver.count(),
       this.prisma.driver.count({ where: { status: DriverStatus.AVAILABLE } }),
       this.prisma.driver.count({ where: { status: DriverStatus.ON_TRIP } }),

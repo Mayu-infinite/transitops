@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { FuelExpensesService } from './fuel-expenses.service';
 import { CreateFuelLogDto } from './dto/create-fuel-log.dto';
@@ -17,7 +17,7 @@ export class FuelExpensesController {
   }
 
   @Post('fuel-logs')
-    @ApiOperation({ summary: 'Log fuel purchase for a vehicle/trip' })
+  @ApiOperation({ summary: 'Log fuel purchase for a vehicle/trip' })
   logFuel(@Body() dto: CreateFuelLogDto) {
     return this.service.createFuelLog(dto);
   }
@@ -31,7 +31,7 @@ export class FuelExpensesController {
   }
 
   @Post('expenses')
-    @ApiOperation({
+  @ApiOperation({
     summary:
       'Log a toll/misc expense; total = toll + other computed server-side',
   })

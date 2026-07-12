@@ -7,9 +7,7 @@ import {
   Param,
   Body,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
@@ -42,19 +40,19 @@ export class VehiclesController {
   }
 
   @Post()
-    @ApiOperation({ summary: 'Register a new vehicle' })
+  @ApiOperation({ summary: 'Register a new vehicle' })
   create(@Body() dto: CreateVehicleDto) {
     return this.vehiclesService.create(dto);
   }
 
   @Patch(':id')
-    @ApiOperation({ summary: 'Update vehicle details' })
+  @ApiOperation({ summary: 'Update vehicle details' })
   update(@Param('id') id: string, @Body() dto: UpdateVehicleDto) {
     return this.vehiclesService.update(id, dto);
   }
 
   @Delete(':id')
-    @ApiOperation({ summary: 'Retire a vehicle' })
+  @ApiOperation({ summary: 'Retire a vehicle' })
   retire(@Param('id') id: string) {
     return this.vehiclesService.retire(id);
   }

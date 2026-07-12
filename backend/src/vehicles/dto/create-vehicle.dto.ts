@@ -18,6 +18,7 @@ export class CreateVehicleDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
+  registrationNumber: string;
 
   @ApiProperty({
     example: 'Tata Ace',

@@ -4,11 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  MaintenanceStatus,
-  Prisma,
-  VehicleStatus,
-} from '@prisma/client';
+import { MaintenanceStatus, Prisma, VehicleStatus } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -29,9 +25,7 @@ export class MaintenanceService {
    * - Vehicle cannot already have OPEN maintenance
    * - Vehicle status becomes IN_SHOP
    */
-  async openMaintenance(
-    createMaintenanceDto: CreateMaintenanceDto,
-  ) {
+  async openMaintenance(createMaintenanceDto: CreateMaintenanceDto) {
     const vehicle = await this.prisma.vehicle.findUnique({
       where: {
         id: createMaintenanceDto.vehicleId,
@@ -43,24 +37,19 @@ export class MaintenanceService {
     }
 
     if (vehicle.status === VehicleStatus.ON_TRIP) {
-      throw new ConflictException(
-        'Vehicle is currently on a trip.',
-      );
+      throw new ConflictException('Vehicle is currently on a trip.');
     }
 
     if (vehicle.status === VehicleStatus.RETIRED) {
-      throw new ConflictException(
-        'Retired vehicles cannot enter maintenance.',
-      );
+      throw new ConflictException('Retired vehicles cannot enter maintenance.');
     }
 
-    const activeMaintenance =
-      await this.prisma.maintenance.findFirst({
-        where: {
-          vehicleId: vehicle.id,
-          status: MaintenanceStatus.OPEN,
-        },
-      });
+    const activeMaintenance = await this.prisma.maintenance.findFirst({
+      where: {
+        vehicleId: vehicle.id,
+        status: MaintenanceStatus.OPEN,
+      },
+    });
 
     if (activeMaintenance) {
       throw new ConflictException(
@@ -68,11 +57,10 @@ export class MaintenanceService {
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const maintenance =
-        await tx.maintenance.create({
-          data: createMaintenanceDto,
-        });
+    return await this.prisma.$transaction(async (tx) => {
+      const maintenance = await tx.maintenance.create({
+        data: createMaintenanceDto,
+      });
 
       await tx.vehicle.update({
         where: {
@@ -91,13 +79,7 @@ export class MaintenanceService {
    * List Maintenance Records
    */
   async findAll(query: QueryMaintenanceDto) {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      status,
-      vehicleId,
-    } = query;
+    const { page = 1, limit = 10, search, status, vehicleId } = query;
 
     const skip = (page - 1) * limit;
 
@@ -151,21 +133,18 @@ export class MaintenanceService {
    * Get Maintenance Record
    */
   async findOne(id: string) {
-    const maintenance =
-      await this.prisma.maintenance.findUnique({
-        where: {
-          id,
-        },
+    const maintenance = await this.prisma.maintenance.findUnique({
+      where: {
+        id,
+      },
 
-        include: {
-          vehicle: true,
-        },
-      });
+      include: {
+        vehicle: true,
+      },
+    });
 
     if (!maintenance) {
-      throw new NotFoundException(
-        'Maintenance record not found.',
-      );
+      throw new NotFoundException('Maintenance record not found.');
     }
 
     return maintenance;
@@ -174,10 +153,7 @@ export class MaintenanceService {
   /**
    * Update Maintenance Record
    */
-  async update(
-    id: string,
-    updateMaintenanceDto: UpdateMaintenanceDto,
-  ) {
+  async update(id: string, updateMaintenanceDto: UpdateMaintenanceDto) {
     await this.findOne(id);
 
     try {
@@ -189,19 +165,15 @@ export class MaintenanceService {
         data: updateMaintenanceDto,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError
-      ) {
-        throw new BadRequestException(
-          error.message,
-        );
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(error.message);
       }
 
       throw error;
     }
   }
 
-    /**
+  /**
    * Close Maintenance
    *
    * Business Rules:
@@ -221,33 +193,25 @@ export class MaintenanceService {
     });
 
     if (!maintenance) {
-      throw new NotFoundException(
-        'Maintenance record not found.',
-      );
+      throw new NotFoundException('Maintenance record not found.');
     }
 
-    if (maintenance.status === MaintenanceStatus.COMPLETED) {
-      throw new ConflictException(
-        'Maintenance is already completed.',
-      );
+    if (maintenance.status === MaintenanceStatus.RESOLVED) {
+      throw new ConflictException('Maintenance is already completed.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const updatedMaintenance =
-        await tx.maintenance.update({
-          where: {
-            id,
-          },
-          data: {
-            status: MaintenanceStatus.COMPLETED,
-            endDate: new Date(),
-          },
-        });
+    return await this.prisma.$transaction(async (tx) => {
+      const updatedMaintenance = await tx.maintenance.update({
+        where: {
+          id,
+        },
+        data: {
+          status: MaintenanceStatus.RESOLVED,
+          endDate: new Date(),
+        },
+      });
 
-      if (
-        maintenance.vehicle.status !==
-        VehicleStatus.RETIRED
-      ) {
+      if (maintenance.vehicle.status !== VehicleStatus.RETIRED) {
         await tx.vehicle.update({
           where: {
             id: maintenance.vehicleId,
@@ -266,11 +230,7 @@ export class MaintenanceService {
    * Dashboard Statistics
    */
   async getCounts() {
-    const [
-      total,
-      open,
-      completed,
-    ] = await Promise.all([
+    const [total, open, completed] = await Promise.all([
       this.prisma.maintenance.count(),
 
       this.prisma.maintenance.count({
@@ -281,7 +241,7 @@ export class MaintenanceService {
 
       this.prisma.maintenance.count({
         where: {
-          status: MaintenanceStatus.COMPLETED,
+          status: MaintenanceStatus.RESOLVED,
         },
       }),
     ]);
@@ -297,7 +257,7 @@ export class MaintenanceService {
    * Active Maintenance Records
    */
   async getOpenMaintenance() {
-    return this.prisma.maintenance.findMany({
+    return await this.prisma.maintenance.findMany({
       where: {
         status: MaintenanceStatus.OPEN,
       },
@@ -323,7 +283,7 @@ export class MaintenanceService {
    * Maintenance History
    */
   async getHistory(vehicleId: string) {
-    return this.prisma.maintenance.findMany({
+    return await this.prisma.maintenance.findMany({
       where: {
         vehicleId,
       },

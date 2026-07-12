@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { DriversController } from '../src/drivers/drivers.controller';
 import { DriversService } from '../src/drivers/drivers.service';
 
