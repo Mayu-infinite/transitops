@@ -8,16 +8,11 @@
 
 ### Frontend
 - Next.js
-- React
-- TypeScript
-- Tailwind CSS
 
 ### Backend
 - NestJS
 - Prisma ORM
 - PostgreSQL
-
----
 
 ## 📌 Features
 
@@ -94,6 +89,28 @@ The system is designed around the following core entities:
 These entities are connected through relational mappings to support fleet operations and enforce business rules.
 
 ---
+## 🗃️ Database Design
+
+The backend database is designed using a relational schema centered around the following entities:
+
+- **User** – Authentication, authorization, and role management.
+- **Vehicle** – Vehicle registration, specifications, status, and operational details.
+- **Driver** – Driver information, license details, safety score, and availability.
+- **Trip** – Source, destination, assigned vehicle, assigned driver, cargo details, trip status, and revenue.
+- **Maintenance** – Vehicle maintenance history, cost, schedule, and maintenance status.
+- **Fuel Log** – Fuel consumption, odometer readings, and fuel costs.
+- **Expense** – Vehicle-related operational expenses.
+
+### Entity Relationships
+
+- A **User** creates Trips and Maintenance records.
+- A **Vehicle** can participate in multiple Trips.
+- A **Driver** can be assigned to multiple Trips over time.
+- A **Vehicle** has multiple Maintenance records.
+- A **Vehicle** has multiple Fuel Logs.
+- A **Vehicle** has multiple Expense records.
+
+The schema is implemented using **Prisma ORM**, providing type-safe database access and relational data management.
 
 ## 👥 Team Workflow
 
