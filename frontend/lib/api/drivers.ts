@@ -10,7 +10,16 @@ export function listDrivers(params?: {
   if (params?.status) qs.set("status", params.status);
   if (params?.search) qs.set("search", params.search);
   const q = qs.toString();
-  return apiRequest<Driver[] | Paginated<Driver>>(`/drivers${q ? `?${q}` : ""}`, {
+  return apiRequest<Driver[] | Paginated<Driver>>(
+    `/drivers${q ? `?${q}` : ""}`,
+    {
+      auth: true,
+    },
+  ).then(unwrapList);
+}
+
+export function listDispatchEligibleDrivers(): Promise<Driver[]> {
+  return apiRequest<Driver[] | Paginated<Driver>>("/drivers/dispatch-pool", {
     auth: true,
   }).then(unwrapList);
 }
@@ -37,5 +46,9 @@ export function updateDriver(
   id: string,
   body: Partial<CreateDriverInput> & { status?: DriverStatus },
 ): Promise<Driver> {
-  return apiRequest<Driver>(`/drivers/${id}`, { method: "PATCH", body, auth: true });
+  return apiRequest<Driver>(`/drivers/${id}`, {
+    method: "PATCH",
+    body,
+    auth: true,
+  });
 }
