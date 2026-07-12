@@ -52,6 +52,7 @@ export class CreateMaintenanceDto {
   @IsDateString()
   startDate: Date;
 
+
   @ApiProperty({
     enum: MaintenanceStatus,
     default: MaintenanceStatus.OPEN,

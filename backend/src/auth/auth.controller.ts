@@ -20,13 +20,13 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return await this.authService.login(dto);
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async me(@CurrentUser() user: AuthenticatedUser): Promise<AuthenticatedUser> {
-    return await Promise.resolve(user);
+  me(@CurrentUser() user: AuthenticatedUser): AuthenticatedUser {
+    return user;
   }
 }

@@ -14,7 +14,8 @@ export class DashboardQueryDto {
   status?: VehicleStatus;
 
   @ApiPropertyOptional({
-    description: 'Region filter (Note: Ignored because region does not exist on the Vehicle schema)',
+    description:
+      'Region filter (Note: Ignored because region does not exist on the Vehicle schema)',
   })
   @IsOptional()
   @IsString()

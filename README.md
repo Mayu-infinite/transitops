@@ -1,125 +1,89 @@
-# TransitOps
+# TransitOps 🚛
 
-**TransitOps** is a Smart Transport Operations Platform developed for the **Odoo Hackathon 2026**. The platform digitizes fleet operations by providing centralized management for vehicles, drivers, trips, maintenance, fuel logs, expenses, and operational analytics.
+**Smart Transport Operations Platform**
 
----
+TransitOps is an end-to-end transport operations platform that digitizes vehicle, driver, dispatch, maintenance, and expense management while enforcing strict business rules and providing real-time operational insights. Built during an 8-Hour Hackathon, this centralized platform helps logistics companies eliminate spreadsheets, avoid scheduling conflicts, and maximize fleet utilization.
 
-## 🚀 Tech Stack
+## 🌟 Key Features
 
-### Frontend
-- Next.js
+*   **Secure Authentication:** Role-Based Access Control (RBAC) ensuring secure access for Fleet Managers, Drivers, Safety Officers, and Financial Analysts.
+*   **Real-time Dashboard:** Track KPIs like Active Vehicles, Fleet Utilization (%), and Drivers On Duty at a glance with advanced filtering capabilities.
+*   **Vehicle Registry:** Full lifecycle management of vehicles with automatic status tracking (Available, On Trip, In Shop, Retired).
+*   **Driver Management:** Comprehensive driver profiles tracking license validity, safety scores, and availability statuses.
+*   **Smart Trip Dispatching:** Automated validations ensure cargo doesn't exceed vehicle capacity, licenses aren't expired, and assets aren't double-booked.
+*   **Maintenance Logs:** Automated status transitions pull vehicles into the shop and return them to the active pool when repairs are closed.
+*   **Fuel & Expense Tracking:** Log fuel consumption and operational costs (tolls, insurance) for automated profitability calculations.
+*   **Advanced Analytics & Reports:** Instant visibility into Fuel Efficiency, Operational Costs, and Vehicle ROI, with CSV export functionality.
 
-### Backend
-- NestJS
-- Prisma ORM
-- PostgreSQL
+## 🛡️ Business Rules Engine
 
-## 📌 Features
+Our backend strictly enforces the following rules to ensure operational integrity:
+*   **Asset Availability:** Retired or "In Shop" vehicles, and "Suspended" or expired-license drivers are automatically blocked from dispatch.
+*   **No Double Booking:** Drivers or vehicles already "On Trip" cannot be assigned to new trips until completion.
+*   **Capacity Enforcement:** Trip creation is blocked if Cargo Weight exceeds the vehicle's maximum load capacity.
+*   **Automated Status Transitions:** 
+    *   Dispatching a trip switches both vehicle and driver to `On Trip`.
+    *   Completing or cancelling a trip restores them to `Available`.
+    *   Opening a maintenance record automatically flags the vehicle as `In Shop`.
 
-- Authentication & Role-Based Access Control (RBAC)
-- Dashboard with Fleet KPIs
-- Vehicle Registry Management
-- Driver Management
-- Trip Management
-- Maintenance Workflow
-- Fuel & Expense Tracking
-- Reports & Analytics
-- Business Rule Validation
+## 🛠️ Tech Stack
 
----
+**Backend:**
+*   NestJS (Modular Architecture)
+*   Prisma ORM
+*   PostgreSQL
+*   TypeScript
+*   Swagger (API Documentation)
+*   Passport-JWT (Authentication)
 
-## 🏗️ System Modules
+**Frontend:**
+*   Next.js (App Router)
+*   React 19
+*   Tailwind CSS (v4)
+*   HeroUI
+*   TypeScript
 
-### Vehicle Management
-- Register and manage fleet vehicles
-- Track vehicle status
-- Monitor load capacity and odometer
+## 🚀 Getting Started
 
-### Driver Management
-- Maintain driver profiles
-- License validation
-- Safety score tracking
+### Prerequisites
+*   Node.js (v18+)
+*   PostgreSQL
+*   npm or pnpm
 
-### Trip Management
-- Create and manage transport trips
-- Vehicle and driver assignment
-- Automatic status transitions
+### Backend Setup
+```bash
+cd backend
+# Install dependencies
+npm install
 
-### Maintenance
-- Schedule maintenance records
-- Vehicle availability management
+# Setup environment variables
+cp .env.example .env
+# Edit .env with your DATABASE_URL
 
-### Fuel & Expense
-- Record fuel logs
-- Track operational expenses
-- Calculate total operating costs
+# Apply database migrations
+npx prisma migrate dev
+npx prisma generate
 
-### Dashboard & Analytics
-- Fleet utilization
-- Active trips
-- Operational costs
-- Fuel efficiency
-- Vehicle ROI
-
----
-
-## 📂 Project Structure
-
-```
-transitops/
-├── frontend/      # Next.js Application
-├── backend/       # NestJS API
-└── README.md
+# Start the NestJS server
+npm run start:dev
 ```
 
----
+### Frontend Setup
+```bash
+cd frontend
+# Install dependencies
+npm install
 
-## 🗄️ Database Overview
+# Start the Next.js development server
+npm run dev
+```
 
-The system is designed around the following core entities:
+The frontend will be available at `http://localhost:3001` and the backend API at `http://localhost:3000`. 
+API Documentation (Swagger) can be accessed at `http://localhost:3000/api` (if configured).
 
-- Users
-- Vehicles
-- Drivers
-- Trips
-- Maintenance
-- Fuel Logs
-- Expenses
-
-These entities are connected through relational mappings to support fleet operations and enforce business rules.
-
----
-## 🗃️ Database Design
-
-The backend database is designed using a relational schema centered around the following entities:
-
-- **User** – Authentication, authorization, and role management.
-- **Vehicle** – Vehicle registration, specifications, status, and operational details.
-- **Driver** – Driver information, license details, safety score, and availability.
-- **Trip** – Source, destination, assigned vehicle, assigned driver, cargo details, trip status, and revenue.
-- **Maintenance** – Vehicle maintenance history, cost, schedule, and maintenance status.
-- **Fuel Log** – Fuel consumption, odometer readings, and fuel costs.
-- **Expense** – Vehicle-related operational expenses.
-
-### Entity Relationships
-
-- A **User** creates Trips and Maintenance records.
-- A **Vehicle** can participate in multiple Trips.
-- A **Driver** can be assigned to multiple Trips over time.
-- A **Vehicle** has multiple Maintenance records.
-- A **Vehicle** has multiple Fuel Logs.
-- A **Vehicle** has multiple Expense records.
-
-The schema is implemented using **Prisma ORM**, providing type-safe database access and relational data management.
-
-## 👥 Team Workflow
-
-- Feature-based Git branches
-- Pull Requests into `develop`
-- Hourly commits during hackathon development
+## 📊 Database Entities
+The application is built on a fully normalized relational schema encompassing:
+`Users`, `Roles`, `Vehicles`, `Drivers`, `Trips`, `Maintenance Logs`, `Fuel Logs`, and `Expenses`.
 
 ---
-
-## 🎯 Objective
-
-Build a scalable transport operations platform that streamlines fleet management while ensuring operational efficiency through automated workflows, business validations, and analytics.
+*Built with ❤️ for the TransitOps Smart Transport Operations Platform Hackathon.*
