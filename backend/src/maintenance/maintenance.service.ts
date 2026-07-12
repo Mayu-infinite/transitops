@@ -232,7 +232,7 @@ export class MaintenanceService {
       const count = g._count.status;
       result.total += count;
       if (g.status === MaintenanceStatus.OPEN) result.open = count;
-      if (g.status === MaintenanceStatus.RESOLVED) result.completed = count;
+      if (g.status === MaintenanceStatus.COMPLETED) result.completed = count;
     });
 
     return result;

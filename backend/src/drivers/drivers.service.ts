@@ -203,8 +203,8 @@ export class DriversService {
       result.total += count;
       if (g.status === DriverStatus.AVAILABLE) result.available = count;
       if (g.status === DriverStatus.ON_TRIP) result.onTrip = count;
-      if (g.status === DriverStatus.ON_LEAVE) result.onLeave = count;
-      if (g.status === DriverStatus.TERMINATED) result.terminated = count;
+      if (g.status === DriverStatus.OFF_DUTY) result.onLeave = count;
+      if (g.status === DriverStatus.SUSPENDED) result.terminated = count;
     });
 
     return result;
