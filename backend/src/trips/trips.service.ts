@@ -23,16 +23,14 @@ export class TripsService {
   // CREATE
   // ==========================================
   async create(dto: CreateTripDto) {
-    const vehicle = await this.prisma.vehicle.findUnique({
-      where: { id: dto.vehicleId },
-    });
+    const [vehicle, driver] = await Promise.all([
+      this.prisma.vehicle.findUnique({ where: { id: dto.vehicleId } }),
+      this.prisma.driver.findUnique({ where: { id: dto.driverId } }),
+    ]);
+
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found.');
     }
-
-    const driver = await this.prisma.driver.findUnique({
-      where: { id: dto.driverId },
-    });
     if (!driver) {
       throw new NotFoundException('Driver not found.');
     }
@@ -47,6 +45,7 @@ export class TripsService {
       data: {
         ...dto,
         status: TripStatus.DRAFT,
+        createdBy: dto.createdBy || '',
       } as Prisma.TripUncheckedCreateInput,
     });
   }
@@ -243,15 +242,29 @@ export class TripsService {
   // DASHBOARD & HELPERS
   // ==========================================
   async getCounts() {
-    const [total, draft, dispatched, completed, cancelled] = await Promise.all([
-      this.prisma.trip.count(),
-      this.prisma.trip.count({ where: { status: TripStatus.DRAFT } }),
-      this.prisma.trip.count({ where: { status: TripStatus.DISPATCHED } }),
-      this.prisma.trip.count({ where: { status: TripStatus.COMPLETED } }),
-      this.prisma.trip.count({ where: { status: TripStatus.CANCELLED } }),
-    ]);
+    const grouped = await this.prisma.trip.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    });
 
-    return { total, draft, dispatched, completed, cancelled };
+    const result = {
+      total: 0,
+      draft: 0,
+      dispatched: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+
+    grouped.forEach((g) => {
+      const count = g._count.status;
+      result.total += count;
+      if (g.status === TripStatus.DRAFT) result.draft = count;
+      if (g.status === TripStatus.DISPATCHED) result.dispatched = count;
+      if (g.status === TripStatus.COMPLETED) result.completed = count;
+      if (g.status === TripStatus.CANCELLED) result.cancelled = count;
+    });
+
+    return result;
   }
 
   async getActiveTrips() {

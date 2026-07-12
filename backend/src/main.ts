@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { JwtService } from '@nestjs/jwt';
-import { Request, Response, NextFunction } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,7 +22,9 @@ async function bootstrap() {
       try {
         (req as any).user = jwt.verify(token);
       } catch {
-        return res.status(401).json({ statusCode: 401, message: 'Invalid token' });
+        return res
+          .status(401)
+          .json({ statusCode: 401, message: 'Invalid token' });
       }
     }
     next();
@@ -30,4 +32,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();
