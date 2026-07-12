@@ -2,18 +2,20 @@
 
 // ─────────────────────────────────────────────────────────────────────────
 // Screen 5 · Maintenance                        OWNER: Saichandana
-// Mockup: "5. Maintenance"
-// TODO: Log Service Record form (vehicle, service type, cost, date, status) ·
-//       Service Log table. Rule: creating an ACTIVE record -> vehicle In Shop
-//       (removed from dispatch pool); closing -> vehicle Available (unless
-//       Retired).
+// Log Service Record form + Service Log table. Rule: an active record ->
+// vehicle In Shop (removed from dispatch pool); resolved -> Available.
 // ─────────────────────────────────────────────────────────────────────────
+import { PageHeader } from "@/components/ui/page-header";
+import { MaintenancePanel } from "@/components/maintenance/maintenance-panel";
 
 export default function MaintenancePage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Maintenance</h1>
-      <p className="mt-1 text-muted">Service records — scaffold, not yet built.</p>
+    <div className="mx-auto max-w-7xl">
+      <PageHeader
+        title="Maintenance"
+        description="Log service records and track vehicles currently in the shop."
+      />
+      <MaintenancePanel />
     </div>
   );
 }

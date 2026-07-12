@@ -26,7 +26,7 @@ export function UserMenu() {
         </p>
       </div>
       <div
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground ring-2 ring-accent/20"
+        className="flex h-9 w-9 items-center justify-center rounded-sm bg-accent text-sm font-semibold text-accent-foreground ring-2 ring-accent/20"
         aria-hidden="true"
       >
         {initials(user.name)}

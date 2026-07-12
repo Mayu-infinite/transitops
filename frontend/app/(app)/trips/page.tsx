@@ -2,13 +2,24 @@
 
 // ─────────────────────────────────────────────────────────────────────────
 // Screen 4 · Trip Dispatcher                    OWNER: Mayuri
-// TODO: lifecycle stepper · Create Trip form (available vehicle/driver only,
-//       cargo ≤ capacity) · Live Board. Dispatch/complete/cancel flip statuses.
+// Live Board + Create Trip form. Vehicle/driver options and the board are live;
+// dispatch/complete/cancel flip statuses server-side.
 // ─────────────────────────────────────────────────────────────────────────
 import { Button, Card, Input, Label, ListBox, Select } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { TRIP_STATUS_TONE, type TripStatus } from "@/lib/domain";
+import { QueryState } from "@/components/ui/query-state";
+import {
+  TRIP_STATUS_TONE,
+  type Driver,
+  type Trip,
+  type TripStatus,
+  type Vehicle,
+} from "@/lib/domain";
+import { listTrips } from "@/lib/api/trips";
+import { listVehicles } from "@/lib/api/vehicles";
+import { listDrivers } from "@/lib/api/drivers";
+import { useApiData } from "@/lib/use-api";
 
 const LIFECYCLE = ["Draft", "Dispatched", "Completed", "Cancelled"];
 const STATUS_LABEL: Record<TripStatus, string> = {
@@ -18,41 +29,28 @@ const STATUS_LABEL: Record<TripStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
-const LIVE_TRIPS: {
-  id: string;
-  route: string;
-  vehicle: string;
-  driver: string;
-  eta: string;
-  status: TripStatus;
-}[] = [
-  {
-    id: "TR001",
-    route: "Mumbai Depot -> Andheri Hub",
-    vehicle: "VAN-05",
-    driver: "Alex",
-    eta: "45 min",
-    status: "DISPATCHED",
-  },
-  {
-    id: "TR002",
-    route: "Pune Yard -> Surat Warehouse",
-    vehicle: "TRK-11",
-    driver: "Zain",
-    eta: "Awaiting driver",
-    status: "DRAFT",
-  },
-  {
-    id: "TR006",
-    route: "Navi Mumbai -> Thane",
-    vehicle: "MINI-03",
-    driver: "Priya",
-    eta: "Completed",
-    status: "COMPLETED",
-  },
-];
+type TripWithRelations = Trip & { vehicle?: Vehicle; driver?: Driver };
+
+interface TripsData {
+  trips: TripWithRelations[];
+  vehicles: Vehicle[];
+  drivers: Driver[];
+}
 
 export default function TripsPage() {
+  const { data, loading, error, reload } = useApiData<TripsData>(async () => {
+    const [trips, vehicles, drivers] = await Promise.all([
+      listTrips() as Promise<TripWithRelations[]>,
+      listVehicles(),
+      listDrivers(),
+    ]);
+    return { trips, vehicles, drivers };
+  });
+
+  const availableVehicles = (data?.vehicles ?? []).filter((v) => v.status === "AVAILABLE");
+  const availableDrivers = (data?.drivers ?? []).filter((d) => d.status === "AVAILABLE");
+  const trips = data?.trips ?? [];
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -64,15 +62,13 @@ export default function TripsPage() {
       <div className="mb-6 flex flex-wrap items-center gap-2">
         {LIFECYCLE.map((step, i) => (
           <div key={step} className="flex items-center gap-2">
-            <span className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-secondary text-xs font-medium">
+            <span className="flex items-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-sm text-muted">
+              <span className="flex h-5 w-5 items-center justify-center rounded-sm bg-surface-secondary text-xs font-medium">
                 {i + 1}
               </span>
               {step}
             </span>
-            {i < LIFECYCLE.length - 1 ? (
-              <span className="text-muted">→</span>
-            ) : null}
+            {i < LIFECYCLE.length - 1 ? <span className="text-muted">→</span> : null}
           </div>
         ))}
       </div>
@@ -88,8 +84,17 @@ export default function TripsPage() {
               <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  <ListBox.Item id="van-05">VAN-05 - 500 kg</ListBox.Item>
-                  <ListBox.Item id="car-02">CAR-02 - 250 kg</ListBox.Item>
+                  {availableVehicles.length === 0 ? (
+                    <ListBox.Item id="none" isDisabled>
+                      No available vehicles
+                    </ListBox.Item>
+                  ) : (
+                    availableVehicles.map((v) => (
+                      <ListBox.Item key={v.id} id={v.id}>
+                        {v.registrationNumber} — {v.maxLoadCapacity} kg
+                      </ListBox.Item>
+                    ))
+                  )}
                 </ListBox>
               </Select.Popover>
             </Select>
@@ -98,8 +103,17 @@ export default function TripsPage() {
               <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  <ListBox.Item id="alex">Alex</ListBox.Item>
-                  <ListBox.Item id="suresh">Suresh</ListBox.Item>
+                  {availableDrivers.length === 0 ? (
+                    <ListBox.Item id="none" isDisabled>
+                      No available drivers
+                    </ListBox.Item>
+                  ) : (
+                    availableDrivers.map((d) => (
+                      <ListBox.Item key={d.id} id={d.id}>
+                        {d.name}
+                      </ListBox.Item>
+                    ))
+                  )}
                 </ListBox>
               </Select.Popover>
             </Select>
@@ -113,7 +127,7 @@ export default function TripsPage() {
               </p>
             </Card>
             <Button variant="primary" fullWidth>
-              Dispatch Available Trip
+              Dispatch Trip
             </Button>
           </div>
         </Card>
@@ -121,31 +135,37 @@ export default function TripsPage() {
         <Card className="border border-border/80 bg-surface/95 p-5 shadow-sm shadow-black/5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">Live Board</h2>
-            <span className="text-xs text-muted">Auto status transitions</span>
+            <span className="text-xs text-muted">{trips.length} trip(s)</span>
           </div>
-          <div className="mt-4 space-y-3">
-            {LIVE_TRIPS.map((trip) => (
-              <div
-                key={trip.id}
-                className="rounded-lg border border-border bg-background/50 p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-foreground">{trip.id}</p>
-                    <p className="mt-1 text-sm text-muted">{trip.route}</p>
-                  </div>
-                  <StatusBadge
-                    tone={TRIP_STATUS_TONE[trip.status]}
-                    label={STATUS_LABEL[trip.status]}
-                  />
+          <div className="mt-4">
+            <QueryState loading={loading} error={error} onRetry={reload}>
+              {trips.length === 0 ? (
+                <p className="py-10 text-center text-sm text-muted">
+                  No trips yet. Create one to see it on the live board.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {trips.map((trip) => (
+                    <div key={trip.id} className="rounded-[8px] border border-border bg-background/50 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-foreground">{trip.id.slice(0, 8)}</p>
+                          <p className="mt-1 text-sm text-muted">
+                            {trip.source} → {trip.destination}
+                          </p>
+                        </div>
+                        <StatusBadge tone={TRIP_STATUS_TONE[trip.status]} label={STATUS_LABEL[trip.status]} />
+                      </div>
+                      <div className="mt-3 grid gap-2 text-xs text-muted sm:grid-cols-3">
+                        <span>Vehicle: {trip.vehicle?.registrationNumber ?? "—"}</span>
+                        <span>Driver: {trip.driver?.name ?? "—"}</span>
+                        <span>Distance: {trip.plannedDistance} km</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="mt-3 grid gap-2 text-xs text-muted sm:grid-cols-3">
-                  <span>Vehicle: {trip.vehicle}</span>
-                  <span>Driver: {trip.driver}</span>
-                  <span>ETA: {trip.eta}</span>
-                </div>
-              </div>
-            ))}
+              )}
+            </QueryState>
           </div>
         </Card>
       </div>

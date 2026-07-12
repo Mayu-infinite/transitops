@@ -1,128 +1,124 @@
 "use client";
 
-// OWNER: Saichandana · Fuel & Expense components. TODO: fuel-log table, expense table, log/add forms.
+// OWNER: Saichandana · Fuel & Expense — live KPI row, fuel logs, expenses.
+// Total Operational Cost = Fuel + Expenses (summed from the API).
 
-import { Button, Card, Input } from "@heroui/react";
+import { useMemo } from "react";
+import { Button, Card } from "@heroui/react";
+import { DataTable, type Column } from "@/components/ui/data-table";
+import { StatCard } from "@/components/ui/stat-card";
+import { QueryState } from "@/components/ui/query-state";
+import { listFuelLogs, listExpenses } from "@/lib/api/finance";
+import { listVehicles } from "@/lib/api/vehicles";
+import { useApiData } from "@/lib/use-api";
+import { inr, fmtDate } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
+import type { Expense, FuelLog, Vehicle } from "@/lib/domain";
 
-const FUEL_LOGS = [
-  {
-    vehicle: "VAN-05",
-    date: "05 Jul 2026",
-    liters: "42 L",
-    cost: "₹3,560",
-  },
-  {
-    vehicle: "TRUCK-11",
-    date: "06 Jul 2026",
-    liters: "70 L",
-    cost: "₹5,400",
-  },
-  {
-    vehicle: "MINI-03",
-    date: "06 Jul 2026",
-    liters: "25 L",
-    cost: "₹2,050",
-  },
-];
-
-const EXPENSES = [
-  {
-    trip: "TRD01",
-    vehicle: "VAN-05",
-    toll: "₹120",
-    other: "₹0",
-    amount: "₹120",
-  },
-  {
-    trip: "TRD07",
-    vehicle: "TRK-12",
-    toll: "₹340",
-    other: "₹50",
-    amount: "₹390",
-  },
-];
+interface FinanceData {
+  fuel: FuelLog[];
+  expenses: Expense[];
+  vehicles: Vehicle[];
+}
 
 export function FuelExpensePanel() {
+  const { data, loading, error, reload } = useApiData<FinanceData>(async () => {
+    const [fuel, expenses, vehicles] = await Promise.all([
+      listFuelLogs(),
+      listExpenses(),
+      listVehicles(),
+    ]);
+    return { fuel, expenses, vehicles };
+  });
+
+  const vehicleName = useMemo(() => {
+    const map = new Map((data?.vehicles ?? []).map((v) => [v.id, v.registrationNumber]));
+    return (id: string) => map.get(id) ?? id.slice(0, 8);
+  }, [data]);
+
+  const fuel = data?.fuel ?? [];
+  const expenses = data?.expenses ?? [];
+  const totalFuel = fuel.reduce((s, r) => s + r.cost, 0);
+  const totalExpenses = expenses.reduce((s, r) => s + r.amount, 0);
+  const operationalCost = totalFuel + totalExpenses;
+
+  const fuelColumns: Column<FuelLog>[] = [
+    { key: "vehicleId", header: "Vehicle", render: (r) => <span className="font-medium">{vehicleName(r.vehicleId)}</span> },
+    { key: "fuelDate", header: "Date", render: (r) => fmtDate(r.fuelDate) },
+    { key: "liters", header: "Liters", align: "right", render: (r) => `${r.liters} L` },
+    { key: "odometer", header: "Odometer", align: "right", render: (r) => r.odometer.toLocaleString() },
+    { key: "cost", header: "Fuel Cost", align: "right", render: (r) => inr(r.cost) },
+  ];
+
+  const expenseColumns: Column<Expense>[] = [
+    { key: "vehicleId", header: "Vehicle", render: (r) => <span className="font-medium">{vehicleName(r.vehicleId)}</span> },
+    { key: "type", header: "Type" },
+    { key: "description", header: "Description", render: (r) => r.description || "—" },
+    { key: "expenseDate", header: "Date", render: (r) => fmtDate(r.expenseDate) },
+    { key: "amount", header: "Amount", align: "right", render: (r) => <span className="font-medium">{inr(r.amount)}</span> },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end gap-3">
-        <Button variant="primary" size="sm">
-          + Log Fuel
-        </Button>
-
-        <Button variant="secondary" size="sm">
-          + Add Expense
-        </Button>
-      </div>
-
-      <Card className="border border-border/80 bg-surface/95 p-5">
-        <h2 className="mb-4 text-sm font-semibold">
-          Fuel Logs
-        </h2>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left">
-              <th className="pb-3">Vehicle</th>
-              <th className="pb-3">Date</th>
-              <th className="pb-3">Liters</th>
-              <th className="pb-3">Fuel Cost</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {FUEL_LOGS.map((fuel) => (
-              <tr key={fuel.vehicle} className="border-b border-border/50">
-                <td className="py-3">{fuel.vehicle}</td>
-                <td>{fuel.date}</td>
-                <td>{fuel.liters}</td>
-                <td>{fuel.cost}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-
-      <Card className="border border-border/80 bg-surface/95 p-5">
-        <h2 className="mb-4 text-sm font-semibold">
-          Other Expenses
-        </h2>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left">
-              <th className="pb-3">Trip</th>
-              <th className="pb-3">Vehicle</th>
-              <th className="pb-3">Toll</th>
-              <th className="pb-3">Other</th>
-              <th className="pb-3">Total</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {EXPENSES.map((expense) => (
-              <tr key={expense.trip} className="border-b border-border/50">
-                <td className="py-3">{expense.trip}</td>
-                <td>{expense.vehicle}</td>
-                <td>{expense.toll}</td>
-                <td>{expense.other}</td>
-                <td>{expense.amount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="mt-6 border-t border-border pt-4 text-right">
-          <p className="text-sm font-semibold">
-            Total Operational Cost:{" "}
-            <span className="text-amber-500">₹34,070</span>
-          </p>
-
-          <p className="mt-1 text-xs text-muted">
-            Fuel + Maintenance (auto calculated)
-          </p>
+    <QueryState loading={loading} error={error} onRetry={reload}>
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard label="Total Fuel Cost" value={inr(totalFuel)} hint="This period" />
+          <StatCard label="Other Expenses" value={inr(totalExpenses)} hint="Toll + misc" />
+          <StatCard label="Operational Cost" value={inr(operationalCost)} hint="Fuel + expenses" accent />
         </div>
-      </Card>
-    </div>
+
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Fuel Logs</h2>
+            <Button
+              variant="secondary"
+              size="sm"
+              isDisabled={fuel.length === 0}
+              onPress={() =>
+                downloadCsv(
+                  "transitops-fuel-logs",
+                  ["Vehicle", "Date", "Liters", "Odometer", "Fuel Cost (INR)"],
+                  fuel.map((r) => [vehicleName(r.vehicleId), fmtDate(r.fuelDate), r.liters, r.odometer, r.cost]),
+                )
+              }
+            >
+              Export CSV
+            </Button>
+          </div>
+          <DataTable columns={fuelColumns} rows={fuel} getRowKey={(r) => r.id} emptyMessage="No fuel logs yet." />
+        </div>
+
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Other Expenses (Toll / Misc)</h2>
+            <Button
+              variant="secondary"
+              size="sm"
+              isDisabled={expenses.length === 0}
+              onPress={() =>
+                downloadCsv(
+                  "transitops-expenses",
+                  ["Vehicle", "Type", "Description", "Date", "Amount (INR)"],
+                  expenses.map((r) => [vehicleName(r.vehicleId), r.type, r.description || "", fmtDate(r.expenseDate), r.amount]),
+                )
+              }
+            >
+              Export CSV
+            </Button>
+          </div>
+          <DataTable columns={expenseColumns} rows={expenses} getRowKey={(r) => r.id} emptyMessage="No expenses logged yet." />
+        </div>
+
+        <Card className="border border-border/80 bg-surface/95 p-5 shadow-sm shadow-black/5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Total Operational Cost</p>
+              <p className="mt-0.5 text-xs text-muted">Fuel + expenses · auto calculated</p>
+            </div>
+            <p className="text-2xl font-semibold tracking-tight text-accent">{inr(operationalCost)}</p>
+          </div>
+        </Card>
+      </div>
+    </QueryState>
   );
 }

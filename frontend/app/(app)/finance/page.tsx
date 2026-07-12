@@ -2,17 +2,30 @@
 
 // ─────────────────────────────────────────────────────────────────────────
 // Screen 6 · Fuel & Expense Management          OWNER: Saichandana
-// Mockup: "6. Fuel & Expense Management"
-// TODO: Fuel Logs table (vehicle, date, liters, cost) · Log Fuel · Add Expense ·
-//       Other Expenses table (toll/misc) · auto Total Operational Cost
-//       (Fuel + Maintenance) per vehicle.
+// Fuel Logs + Other Expenses + auto Total Operational Cost (Fuel + Maint.).
 // ─────────────────────────────────────────────────────────────────────────
+import { Button } from "@heroui/react";
+import { PageHeader } from "@/components/ui/page-header";
+import { FuelExpensePanel } from "@/components/finance/fuel-expense-panel";
 
 export default function FinancePage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Fuel &amp; Expenses</h1>
-      <p className="mt-1 text-muted">Fuel &amp; expense management — scaffold, not yet built.</p>
+    <div className="mx-auto max-w-7xl">
+      <PageHeader
+        title="Fuel & Expenses"
+        description="Track fuel consumption, tolls, and operational costs per vehicle."
+        actions={
+          <>
+            <Button variant="secondary" size="sm">
+              + Add Expense
+            </Button>
+            <Button variant="primary" size="sm">
+              + Log Fuel
+            </Button>
+          </>
+        }
+      />
+      <FuelExpensePanel />
     </div>
   );
 }

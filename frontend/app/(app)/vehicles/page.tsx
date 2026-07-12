@@ -5,15 +5,17 @@
 // TODO: wire filters + Add Vehicle modal + live data. Rules: reg number unique;
 //       Retired/In Shop hidden from dispatch.
 // ─────────────────────────────────────────────────────────────────────────
-import { Button, Card, Input, Label, ListBox, Select } from "@heroui/react";
+import { useMemo, useState } from "react";
+import { Button, Card, Input } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
-import {
-  VEHICLE_STATUS_TONE,
-  type Vehicle,
-  type VehicleStatus,
-} from "@/lib/domain";
+import { QueryState } from "@/components/ui/query-state";
+import { VEHICLE_STATUS_TONE, type Vehicle, type VehicleStatus } from "@/lib/domain";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { listVehicles } from "@/lib/api/vehicles";
+import { useApiData } from "@/lib/use-api";
+import { inr } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
 
 const STATUS_LABEL: Record<VehicleStatus, string> = {
   AVAILABLE: "Available",
@@ -22,55 +24,8 @@ const STATUS_LABEL: Record<VehicleStatus, string> = {
   RETIRED: "Retired",
 };
 
-const VEHICLES: Vehicle[] = [
-  {
-    id: "1",
-    registrationNumber: "MH-04-VAN-05",
-    name: "Urban Van",
-    model: "E-Transit",
-    type: "VAN",
-    maxLoadCapacity: 500,
-    odometer: 82400,
-    acquisitionCost: 630000,
-    status: "AVAILABLE",
-  },
-  {
-    id: "2",
-    registrationNumber: "KA-12-TRK-11",
-    name: "Heavy Truck",
-    model: "BharatBenz",
-    type: "TRUCK",
-    maxLoadCapacity: 5000,
-    odometer: 192000,
-    acquisitionCost: 2450000,
-    status: "ON_TRIP",
-  },
-  {
-    id: "3",
-    registrationNumber: "DL-08-MINI-03",
-    name: "Mini Cargo",
-    model: "Ashok Dost",
-    type: "PICKUP",
-    maxLoadCapacity: 1200,
-    odometer: 66000,
-    acquisitionCost: 490000,
-    status: "IN_SHOP",
-  },
-  {
-    id: "4",
-    registrationNumber: "GJ-01-VAN-01",
-    name: "Legacy Van",
-    model: "Traveller",
-    type: "VAN",
-    maxLoadCapacity: 750,
-    odometer: 244900,
-    acquisitionCost: 540000,
-    status: "RETIRED",
-  },
-];
-
 const columns: Column<Vehicle>[] = [
-  { key: "registrationNumber", header: "Reg. No." },
+  { key: "registrationNumber", header: "Reg. No.", render: (r) => <span className="font-medium">{r.registrationNumber}</span> },
   {
     key: "name",
     header: "Name / Model",
@@ -98,7 +53,7 @@ const columns: Column<Vehicle>[] = [
     key: "acquisitionCost",
     header: "Acq. Cost",
     align: "right",
-    render: (row) => `Rs ${row.acquisitionCost.toLocaleString()}`,
+    render: (row) => inr(row.acquisitionCost),
   },
   {
     key: "status",
@@ -113,51 +68,66 @@ const columns: Column<Vehicle>[] = [
 ];
 
 export default function VehiclesPage() {
+  const [search, setSearch] = useState("");
+  const { data, loading, error, reload } = useApiData<Vehicle[]>(() => listVehicles());
+
+  const rows = useMemo(() => {
+    const all = data ?? [];
+    const q = search.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter((v) =>
+      [v.registrationNumber, v.name, v.model, v.type].some((f) =>
+        f.toLowerCase().includes(q),
+      ),
+    );
+  }, [data, search]);
+
+  const exportCsv = () =>
+    downloadCsv(
+      "transitops-fleet",
+      ["Reg. No.", "Name", "Model", "Type", "Capacity (kg)", "Odometer", "Acq. Cost (INR)", "Status"],
+      rows.map((v) => [
+        v.registrationNumber,
+        v.name,
+        v.model,
+        v.type,
+        v.maxLoadCapacity,
+        v.odometer,
+        v.acquisitionCost,
+        STATUS_LABEL[v.status],
+      ]),
+    );
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Fleet"
         description="Master registry of every vehicle in your fleet."
-        actions={<Button variant="primary" size="sm">+ Add Vehicle</Button>}
+        actions={
+          <>
+            <Button variant="secondary" size="sm" onPress={exportCsv} isDisabled={rows.length === 0}>
+              Export CSV
+            </Button>
+            <Button variant="primary" size="sm">+ Add Vehicle</Button>
+          </>
+        }
       />
       <Card className="mb-5 border border-border/80 bg-surface/95 p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">
-          <Input placeholder="Search reg. no, name, model..." aria-label="Search vehicles" />
-          <Select placeholder="Type">
-            <Label>Type</Label>
-            <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                <ListBox.Item id="all">All Types</ListBox.Item>
-                <ListBox.Item id="VAN">Van</ListBox.Item>
-                <ListBox.Item id="TRUCK">Truck</ListBox.Item>
-                <ListBox.Item id="BUS">Bus</ListBox.Item>
-                <ListBox.Item id="MOTORCYCLE">Motorcycle</ListBox.Item>
-                <ListBox.Item id="PICKUP">Pickup</ListBox.Item>
-                <ListBox.Item id="TRAILER">Trailer</ListBox.Item>
-                <ListBox.Item id="OTHER">Other</ListBox.Item>
-              </ListBox>
-            </Select.Popover>
-          </Select>
-          <Select placeholder="Status">
-            <Label>Status</Label>
-            <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                <ListBox.Item id="all">All Statuses</ListBox.Item>
-                <ListBox.Item id="available">Available</ListBox.Item>
-                <ListBox.Item id="on-trip">On Trip</ListBox.Item>
-              </ListBox>
-            </Select.Popover>
-          </Select>
-        </div>
+        <Input
+          placeholder="Search reg. no, name, model, type..."
+          aria-label="Search vehicles"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </Card>
-      <DataTable
-        columns={columns}
-        rows={VEHICLES}
-        getRowKey={(row) => row.id}
-        emptyMessage="No vehicles registered yet."
-      />
+      <QueryState loading={loading} error={error} onRetry={reload}>
+        <DataTable
+          columns={columns}
+          rows={rows}
+          getRowKey={(row) => row.id}
+          emptyMessage="No vehicles registered yet."
+        />
+      </QueryState>
       <p className="mt-4 text-xs text-muted">
         Rule: Retired and In Shop vehicles are hidden from trip dispatch.
       </p>

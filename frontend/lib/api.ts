@@ -33,7 +33,28 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+/** Backend list envelope for paginated resources (drivers, fuel, expenses). */
+export interface Paginated<T> {
+  data: T[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
+}
+
+/** Normalise a list response: some endpoints return a bare array, others a
+ * `{ data, meta }` envelope. */
+export function unwrapList<T>(res: T[] | Paginated<T>): T[] {
+  return Array.isArray(res) ? res : (res?.data ?? []);
+}
+
+/** Prisma `Decimal` columns serialize to JSON as strings — coerce to number. */
+export const toNum = (value: unknown): number =>
+  typeof value === "number" ? value : Number(value ?? 0);
+
+/** The backend's Prisma DateTime columns reject date-only strings; always send
+ * a full ISO-8601 datetime. */
+export const toISO = (value: string | Date): string =>
+  new Date(value).toISOString();
+
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, auth = false, signal } = options;
 
   const headers: Record<string, string> = {};
@@ -82,12 +103,12 @@ function extractErrorMessage(data: unknown): string | null {
 
 export const authApi = {
   login(payload: LoginPayload) {
-    return request<AuthResponse>("/auth/login", {
+    return apiRequest<AuthResponse>("/auth/login", {
       method: "POST",
       body: payload,
     });
   },
   me() {
-    return request<User>("/auth/me", { auth: true });
+    return apiRequest<User>("/auth/me", { auth: true });
   },
 };

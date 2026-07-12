@@ -48,7 +48,7 @@ export default function AuthLayout({
         <div className="relative z-10 flex h-full flex-col">
           <Logo size="lg" />
 
-          <div className="mt-auto max-w-full">
+          <div className="my-auto max-w-full">
             <h2 className="text-3xl font-semibold leading-tight xl:text-4xl">
               Smart transport operations, secured by role.
             </h2>
@@ -86,8 +86,8 @@ export default function AuthLayout({
       </aside>
 
       {/* Right · form */}
-      <main className="relative flex flex-col bg-background">
-        <header className="flex items-center justify-between px-6 py-5 sm:px-10">
+      <main className="relative flex min-h-dvh flex-col bg-background">
+        <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-5 sm:px-10">
           <div className="lg:hidden">
             <Logo />
           </div>
@@ -96,7 +96,7 @@ export default function AuthLayout({
           </div>
         </header>
 
-        <div className="flex flex-1 items-center justify-center px-6 pb-12 sm:px-10">
+        <div className="flex flex-1 items-center justify-center px-6 py-20 sm:px-10">
           <div className="w-full max-w-[38rem]">{children}</div>
         </div>
       </main>

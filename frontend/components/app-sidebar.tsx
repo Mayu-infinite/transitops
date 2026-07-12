@@ -17,13 +17,13 @@ export function AppSidebar({
   const items = navForRole(role);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center border-b border-border px-5">
-        <Logo />
+    <div className="flex h-full flex-col bg-accent text-white">
+      <div className="flex h-16 items-center border-b border-white/15 px-5">
+        <Logo onAccent />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 p-3">
-        <p className="px-3 pb-2 pt-3 text-xs font-semibold uppercase text-muted">
+      <nav className="flex flex-1 flex-col gap-1.5 p-3">
+        <p className="px-3 pb-2 pt-3 text-xs font-semibold uppercase tracking-wider text-white/55">
           Menu
         </p>
         {items.map((item) => {
@@ -36,14 +36,14 @@ export function AppSidebar({
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
               className={[
-                "relative rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "relative rounded-[8px] px-3.5 py-3 text-[15px] font-medium transition-colors",
                 active
-                  ? "bg-accent text-accent-foreground shadow-sm shadow-accent/20"
-                  : "text-muted hover:bg-surface-tertiary hover:text-foreground",
+                  ? "bg-white text-accent shadow-sm"
+                  : "text-white/75 hover:bg-white/10 hover:text-white",
               ].join(" ")}
             >
               {active ? (
-                <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-accent-foreground/80" />
+                <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-[8px] bg-accent" />
               ) : null}
               {item.label}
             </Link>
@@ -51,8 +51,8 @@ export function AppSidebar({
         })}
       </nav>
 
-      <div className="border-t border-border p-4">
-        <p className="text-xs text-muted">TransitOps · v0.1</p>
+      <div className="border-t border-white/15 p-4">
+        <p className="text-xs text-white/55">TransitOps · v0.1</p>
       </div>
     </div>
   );

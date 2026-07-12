@@ -46,6 +46,17 @@
   --muted: oklch(0.72 0.03 255);
 }
 
+/* -- Sharp corners ----------------------------------------------------------
+ * HeroUI and this Tailwind build derive their entire radius scale from a single
+ * base (--radius); cards use min(32px, --radius-3xl) and buttons use rounded-3xl,
+ * i.e. base × 3. We force a near-square 1px base so every card, button, input,
+ * dropdown, table and KPI tile is sharp-cornered. `!important` is required — the
+ * CSS minifier otherwise merges this away against HeroUI's layered default. */
+:root {
+  --radius: 2px !important;
+  --field-radius: 4px !important;
+}
+
 html,
 body {
   height: 100%;

@@ -36,7 +36,7 @@ export default function AppLayout({
   return (
     <div className="flex min-h-dvh bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface-secondary/70 lg:block">
+      <aside className="hidden w-64 shrink-0 lg:block">
         <div className="sticky top-0 h-dvh overflow-y-auto">
           <AppSidebar role={user.role} />
         </div>
@@ -50,7 +50,7 @@ export default function AppLayout({
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute left-0 top-0 h-full w-64 border-r border-border bg-surface-secondary">
+          <div className="absolute left-0 top-0 h-full w-64">
             <AppSidebar
               role={user.role}
               onNavigate={() => setMobileNavOpen(false)}
