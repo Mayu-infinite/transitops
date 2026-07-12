@@ -9,9 +9,6 @@ export class ReportsService {
   async getDashboard(query: DashboardQueryDto) {
     const { vehicleType, status } = query;
 
-    // NOTE: 'region' was requested as a filter, but it doesn't exist on the 
-    // Vehicle model in schema.prisma, so it's ignored here.
-    
     const vehicleWhere = {
       ...(vehicleType && { type: vehicleType }),
       ...(status && { status }),
@@ -109,8 +106,14 @@ export class ReportsService {
           _sum: { revenue: true },
           where: { status: 'COMPLETED' },
         }),
-      this.prisma.maintenance.groupBy({ by: ['vehicleId'], _sum: { cost: true } }),
-      this.prisma.fuelLog.groupBy({ by: ['vehicleId'], _sum: { cost: true } }),
+        this.prisma.maintenance.groupBy({
+          by: ['vehicleId'],
+          _sum: { cost: true },
+        }),
+        this.prisma.fuelLog.groupBy({
+          by: ['vehicleId'],
+          _sum: { cost: true },
+        }),
         this.prisma.expense.groupBy({
           by: ['vehicleId'],
           _sum: { amount: true },

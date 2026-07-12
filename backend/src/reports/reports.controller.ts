@@ -34,7 +34,10 @@ export class ReportsController {
   async exportCsv(@Res() res: Response) {
     const csvData = await this.reportsService.exportCompletedTrips();
     res.header('Content-Type', 'text/csv');
-    res.header('Content-Disposition', 'attachment; filename=transitops-export.csv');
+    res.header(
+      'Content-Disposition',
+      'attachment; filename=transitops-export.csv',
+    );
     return res.send(csvData);
   }
 }
