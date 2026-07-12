@@ -1,26 +1,23 @@
-@import "tailwindcss";
+/* TransitOps global styles.
+ * HeroUI v3 is built on Tailwind CSS v4. The HeroUI stylesheet already pulls in
+ * `@import "tailwindcss"`, so importing it is enough to get the full utility set
+ * plus the HeroUI theme tokens and component styles. */
+@import "@heroui/styles";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Enable class-based dark mode so our own `dark:` utilities follow the same
+ * `.dark` class HeroUI toggles on the <html> element (see ThemeProvider). */
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* Scan our source for utility classes. */
+@source "./";
+@source "../components/";
+@source "../lib/";
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
 }
