@@ -43,9 +43,14 @@ export class TripsService {
 
     return await this.prisma.trip.create({
       data: {
-        ...dto,
+        vehicleId: dto.vehicleId,
+        driverId: dto.driverId,
+        source: dto.source,
+        destination: dto.destination,
+        cargoWeight: dto.cargoWeight,
+        plannedDistance: dto.plannedDistance,
         status: TripStatus.DRAFT,
-        createdBy: dto.createdBy || '',
+        createdBy: dto.createdBy,
       },
     });
   }

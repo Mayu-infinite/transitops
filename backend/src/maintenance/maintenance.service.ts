@@ -190,26 +190,30 @@ export class MaintenanceService {
       throw new ConflictException('Maintenance is already completed.');
     }
 
-    const updates: any[] = [
-      this.prisma.maintenance.update({
-        where: { id },
-        data: {
-          status: MaintenanceStatus.RESOLVED,
-          endDate: new Date(),
-        },
-      }),
-    ];
+    const maintenanceUpdate = this.prisma.maintenance.update({
+      where: { id },
+      data: {
+        status: MaintenanceStatus.RESOLVED,
+        endDate: new Date(),
+      },
+    });
 
-    if (maintenance.vehicle.status !== VehicleStatus.RETIRED) {
-      updates.push(
-        this.prisma.vehicle.update({
-          where: { id: maintenance.vehicleId },
-          data: { status: VehicleStatus.AVAILABLE },
-        }),
-      );
+    if (maintenance.vehicle.status === VehicleStatus.RETIRED) {
+      const [updatedMaintenance] = await this.prisma.$transaction([
+        maintenanceUpdate,
+      ]);
+      return updatedMaintenance;
     }
 
-    const [updatedMaintenance] = await this.prisma.$transaction(updates);
+    const vehicleUpdate = this.prisma.vehicle.update({
+      where: { id: maintenance.vehicleId },
+      data: { status: VehicleStatus.AVAILABLE },
+    });
+
+    const [updatedMaintenance] = await this.prisma.$transaction([
+      maintenanceUpdate,
+      vehicleUpdate,
+    ]);
     return updatedMaintenance;
   }
 
