@@ -100,7 +100,8 @@ export class ReportsService {
       Number(expCostAgg._sum.amount || 0);
 
     // 4. Average Vehicle ROI & Top Costliest Vehicles
-    const [tripsRev, maintCosts, fuelCosts, expCosts, vehicles] = await Promise.all([
+    const [tripsRev, maintCosts, fuelCosts, expCosts, vehicles] =
+      await Promise.all([
         this.prisma.trip.groupBy({
           by: ['vehicleId'],
           _sum: { revenue: true },
@@ -121,29 +122,39 @@ export class ReportsService {
         this.prisma.vehicle.findMany({
           select: { id: true, registrationNumber: true, acquisitionCost: true },
         }),
-    ]);
+      ]);
 
     // Fast mapping dictionaries for O(1) lookups
-    const toMap = (arr: any[], key: string, valKey: string) =>
+    const toMap = <
+      T extends { vehicleId: string; _sum: Record<string, unknown> },
+      K extends keyof T['_sum'] & string,
+    >(
+      arr: T[],
+      valKey: K,
+    ) =>
       new Map(
-        arr.map((item) => [item.vehicleId, Number(item._sum[valKey] || 0)]),
+        arr.map((item) => [item.vehicleId, Number(item._sum[valKey] ?? 0)]),
       );
 
-    const revMap = toMap(tripsRev, 'vehicleId', 'revenue');
-    const maintMap = toMap(maintCosts, 'vehicleId', 'cost');
-    const fuelMap = toMap(fuelCosts, 'vehicleId', 'cost');
-    const expMap = toMap(expCosts, 'vehicleId', 'amount');
+    const revMap = toMap(tripsRev, 'revenue');
+    const maintMap = toMap(maintCosts, 'cost');
+    const fuelMap = toMap(fuelCosts, 'cost');
+    const expMap = toMap(expCosts, 'amount');
 
     let totalROI = 0;
     let vehiclesWithCompletedTrips = 0;
-    const vehicleCostList: { vehicleId: string; regNo: string; totalCost: number }[] = [];
+    const vehicleCostList: {
+      vehicleId: string;
+      regNo: string;
+      totalCost: number;
+    }[] = [];
 
     for (const v of vehicles) {
       const vRev = revMap.get(v.id) || 0;
       const vMaint = maintMap.get(v.id) || 0;
       const vFuel = fuelMap.get(v.id) || 0;
       const vExp = expMap.get(v.id) || 0;
-      
+
       const totalCost = vMaint + vFuel + vExp;
 
       vehicleCostList.push({
@@ -160,7 +171,10 @@ export class ReportsService {
       }
     }
 
-    const averageVehicleROI = vehiclesWithCompletedTrips > 0 ? totalROI / vehiclesWithCompletedTrips : 0;
+    const averageVehicleROI =
+      vehiclesWithCompletedTrips > 0
+        ? totalROI / vehiclesWithCompletedTrips
+        : 0;
 
     vehicleCostList.sort((a, b) => b.totalCost - a.totalCost);
     const topCostliestVehicles = vehicleCostList.slice(0, 5);
@@ -171,7 +185,7 @@ export class ReportsService {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
       const monthStr = d.toISOString().substring(0, 7); // YYYY-MM
-      
+
       // We can fallback to fetching trips for exact month range using aggregate
       const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
       const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0);
@@ -183,7 +197,10 @@ export class ReportsService {
           completedAt: { gte: startOfMonth, lte: endOfMonth },
         },
       });
-      monthlyRevenue.push({ month: monthStr, revenue: Number(monthRevAgg._sum.revenue || 0) });
+      monthlyRevenue.push({
+        month: monthStr,
+        revenue: Number(monthRevAgg._sum.revenue || 0),
+      });
     }
 
     return {
@@ -228,7 +245,7 @@ export class ReportsService {
         `"${t.driver.name.replace(/"/g, '""')}"`,
         t.cargoWeight,
         t.actualDistance || t.plannedDistance,
-        0, 
+        0,
         t.dispatchedAt ? t.dispatchedAt.toISOString() : '',
         t.completedAt ? t.completedAt.toISOString() : '',
       ].join(',');

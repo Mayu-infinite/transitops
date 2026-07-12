@@ -46,7 +46,7 @@ export class TripsService {
         ...dto,
         status: TripStatus.DRAFT,
         createdBy: dto.createdBy || '',
-      } as Prisma.TripUncheckedCreateInput,
+      },
     });
   }
 
@@ -57,7 +57,7 @@ export class TripsService {
     const { status, search, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.TripWhereInput = {};
     if (status) {
       where.status = status;
     }
@@ -213,7 +213,7 @@ export class TripsService {
       throw new BadRequestException('Trip is already completed or cancelled.');
     }
 
-    const updates: any[] = [
+    const updates: Prisma.PrismaPromise<unknown>[] = [
       this.prisma.trip.update({
         where: { id },
         data: { status: TripStatus.CANCELLED },
