@@ -163,7 +163,6 @@ export class ReportsService {
         totalCost,
       });
 
-      // ponytail: removed O(N^2) array search inside loop. Used Map for O(1) lookup.
       if (revMap.has(v.id)) {
         const acqCost = Number(v.acquisitionCost || 1);
         const roi = (vRev - totalCost) / (acqCost === 0 ? 1 : acqCost);
@@ -180,7 +179,6 @@ export class ReportsService {
     vehicleCostList.sort((a, b) => b.totalCost - a.totalCost);
     const topCostliestVehicles = vehicleCostList.slice(0, 5);
 
-    // ponytail: parallelized 6 sequential database queries into one Promise.all
     const monthlyRevenue = await Promise.all(
       Array.from({ length: 6 }, (_, i) => 5 - i).map(async (i) => {
         const d = new Date();
