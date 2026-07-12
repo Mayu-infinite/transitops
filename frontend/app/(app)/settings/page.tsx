@@ -11,10 +11,10 @@ import { Button, Card, Input } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 
 const MATRIX = [
-  ["Fleet Manager", "Edit", "Edit", "View", "Edit", "View"],
-  ["Driver", "View", "-", "Edit", "-", "-"],
-  ["Safety Officer", "-", "Edit", "View", "-", "-"],
-  ["Financial Analyst", "View", "-", "-", "Edit", "Edit"],
+  ["Fleet Manager", "✔", "✔", "—", "—", "✔"],
+  ["Dispatcher", "View", "—", "✔", "—", "—"],
+  ["Safety Officer", "—", "✔", "View", "—", "—"],
+  ["Financial Analyst", "View", "—", "—", "✔", "✔"],
 ];
 
 export default function SettingsPage() {
@@ -29,9 +29,9 @@ export default function SettingsPage() {
         <Card className="border border-border/80 bg-surface/95 p-5">
           <h2 className="text-sm font-semibold text-foreground">General</h2>
           <div className="mt-4 grid gap-3">
-            <Input defaultValue="Bandra Depot 42" aria-label="Depot name" />
-            <Input defaultValue="INR (Rs)" aria-label="Currency" />
-            <Input defaultValue="Kilometers" aria-label="Distance unit" />
+            <Input defaultValue="Gandhinagar Depot" aria-label="Depot name" />
+           <Input defaultValue="INR (₹)" aria-label="Currency" />
+           <Input defaultValue="Kilometers" aria-label="Distance unit" />
             <Button variant="primary" className="mt-2 w-fit">
               Save Changes
             </Button>
