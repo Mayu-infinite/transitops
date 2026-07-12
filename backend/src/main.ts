@@ -6,6 +6,15 @@ import { Request, Response, NextFunction } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Allow the Next.js frontend (dev on :3001) to call the API from the browser.
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') ?? [
+      'http://localhost:3001',
+      'http://localhost:3000',
+    ],
+    credentials: true,
+  });
+
   const jwt = new JwtService({ secret: process.env.JWT_SECRET || 'secret' });
   app.use((req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization?.split(' ')[1];

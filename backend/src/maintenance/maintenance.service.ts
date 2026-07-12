@@ -226,7 +226,7 @@ export class MaintenanceService {
       );
     }
 
-    if (maintenance.status === MaintenanceStatus.COMPLETED) {
+    if (maintenance.status === MaintenanceStatus.RESOLVED) {
       throw new ConflictException(
         'Maintenance is already completed.',
       );
@@ -239,7 +239,7 @@ export class MaintenanceService {
             id,
           },
           data: {
-            status: MaintenanceStatus.COMPLETED,
+            status: MaintenanceStatus.RESOLVED,
             endDate: new Date(),
           },
         });
@@ -281,7 +281,7 @@ export class MaintenanceService {
 
       this.prisma.maintenance.count({
         where: {
-          status: MaintenanceStatus.COMPLETED,
+          status: MaintenanceStatus.RESOLVED,
         },
       }),
     ]);

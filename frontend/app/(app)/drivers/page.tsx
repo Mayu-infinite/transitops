@@ -1,13 +1,10 @@
 "use client";
+
 // ─────────────────────────────────────────────────────────────────────────
 // Screen 3 · Drivers & Safety Profiles          OWNER: Saichandana
-// Mockup: "3. Drivers & Safety Profiles"
-// TODO: Add Driver · table (name, license no, category, expiry, contact, trip
-//       compl., safety score, status badge) · status toggle (Available/On Trip/
-//       Off Duty/Suspended). Rule: expired license OR Suspended -> blocked from
-//       trip assignment.
+// Rule: expired license OR Terminated -> blocked from trip assignment.
 // ─────────────────────────────────────────────────────────────────────────
-import { Button, Card } from "@heroui/react";
+import { Button, Card, Input, Label, ListBox, Select } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -20,8 +17,8 @@ import {
 const STATUS_LABEL: Record<DriverStatus, string> = {
   AVAILABLE: "Available",
   ON_TRIP: "On Trip",
-  OFF_DUTY: "Off Duty",
-  SUSPENDED: "Suspended",
+  ON_LEAVE: "On Leave",
+  TERMINATED: "Terminated",
 };
 
 const DRIVERS: Driver[] = [
@@ -43,7 +40,7 @@ const DRIVERS: Driver[] = [
     licenseExpiry: "2026-08-12",
     contactNumber: "+91 99887 77665",
     safetyScore: 87,
-    status: "SUSPENDED",
+    status: "TERMINATED",
   },
   {
     id: "3",
@@ -63,7 +60,7 @@ const DRIVERS: Driver[] = [
     licenseExpiry: "2025-01-11",
     contactNumber: "+91 91234 45678",
     safetyScore: 74,
-    status: "OFF_DUTY",
+    status: "ON_LEAVE",
   },
 ];
 
@@ -92,60 +89,54 @@ const columns: Column<Driver>[] = [
 ];
 
 export default function DriversPage() {
-  const [search, setSearch] = useState("");
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Drivers &amp; Safety Profiles
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage driver profiles and safety records.
-          </p>
-        </div>
-
-        <button className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700">
-          + Add Driver
-        </button>
-      </div>
-
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search drivers..."
-        className="w-full rounded-lg border px-4 py-2"
+    <div className="mx-auto max-w-7xl">
+      <PageHeader
+        title="Drivers & Safety Profiles"
+        description="Manage driver profiles, licenses, and safety records."
+        actions={
+          <Button variant="primary" size="sm">
+            + Add Driver
+          </Button>
+        }
       />
 
-      <DriversTable search={search} />
-
-      <div className="space-y-2">
-        <p className="text-sm font-semibold">Toggle Status</p>
-
-        <div className="flex flex-wrap gap-3">
-          <button className="rounded bg-green-500 px-4 py-2 text-white">
-            Available
-          </button>
-
-          <button className="rounded bg-blue-500 px-4 py-2 text-white">
-            On Trip
-          </button>
-
-          <button className="rounded bg-gray-400 px-4 py-2 text-white">
-            Off Duty
-          </button>
-
-          <button className="rounded bg-orange-500 px-4 py-2 text-white">
-            Suspended
-          </button>
+      <Card className="mb-5 border border-border/80 bg-surface/95 p-4">
+        <div className="grid gap-3 md:grid-cols-[1fr_200px]">
+          <Input
+            placeholder="Search name, license no, category..."
+            aria-label="Search drivers"
+          />
+          <Select placeholder="Status">
+            <Label>Status</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                <ListBox.Item id="all">All Statuses</ListBox.Item>
+                <ListBox.Item id="AVAILABLE">Available</ListBox.Item>
+                <ListBox.Item id="ON_TRIP">On Trip</ListBox.Item>
+                <ListBox.Item id="ON_LEAVE">On Leave</ListBox.Item>
+                <ListBox.Item id="TERMINATED">Terminated</ListBox.Item>
+              </ListBox>
+            </Select.Popover>
+          </Select>
         </div>
+      </Card>
 
-        <p className="text-sm text-orange-600">
-          Rule: Expired license or Suspended status → blocked from trip
-          assignment.
-        </p>
-      </div>
+      <DataTable
+        columns={columns}
+        rows={DRIVERS}
+        getRowKey={(row) => row.id}
+        emptyMessage="No drivers registered yet."
+      />
+
+      <p className="mt-4 text-xs text-muted">
+        Rule: an expired license or Terminated status blocks a driver from trip
+        assignment.
+      </p>
     </div>
   );
 }
