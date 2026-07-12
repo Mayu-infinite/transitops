@@ -46,13 +46,15 @@ export class AuthService {
     return user;
   }
 
-  private async generateAccessToken(user: {
+  private generateAccessToken(user: {
     id: string;
+    name: string;
     email: string;
     role: string;
   }) {
-    return await this.jwtService.signAsync({
+    return this.jwtService.signAsync({
       sub: user.id,
+      name: user.name,
       email: user.email,
       role: user.role,
     });

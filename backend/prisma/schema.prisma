@@ -170,6 +170,7 @@ model FuelLog {
   vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
 
   @@index([fuelDate])
+  @@index([vehicleId])
 }
 
 model Expense {
@@ -185,4 +186,5 @@ model Expense {
   vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
 
   @@index([expenseDate])
+  @@index([vehicleId])
 }

@@ -163,7 +163,7 @@ export class ReportsService {
         totalCost,
       });
 
-      if (vRev > 0 || tripsRev.find((t) => t.vehicleId === v.id)) {
+      if (revMap.has(v.id)) {
         const acqCost = Number(v.acquisitionCost || 1);
         const roi = (vRev - totalCost) / (acqCost === 0 ? 1 : acqCost);
         totalROI += roi;
@@ -179,29 +179,29 @@ export class ReportsService {
     vehicleCostList.sort((a, b) => b.totalCost - a.totalCost);
     const topCostliestVehicles = vehicleCostList.slice(0, 5);
 
-    // 5. Monthly Revenue (using aggregate over completed trips instead of memory map)
-    const monthlyRevenue: { month: string; revenue: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const monthStr = d.toISOString().substring(0, 7); // YYYY-MM
+    const monthlyRevenue = await Promise.all(
+      Array.from({ length: 6 }, (_, i) => 5 - i).map(async (i) => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const monthStr = d.toISOString().substring(0, 7);
 
-      // We can fallback to fetching trips for exact month range using aggregate
-      const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-      const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+        const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
-      const monthRevAgg = await this.prisma.trip.aggregate({
-        _sum: { revenue: true },
-        where: {
-          status: 'COMPLETED',
-          completedAt: { gte: startOfMonth, lte: endOfMonth },
-        },
-      });
-      monthlyRevenue.push({
-        month: monthStr,
-        revenue: Number(monthRevAgg._sum.revenue || 0),
-      });
-    }
+        const monthRevAgg = await this.prisma.trip.aggregate({
+          _sum: { revenue: true },
+          where: {
+            status: 'COMPLETED',
+            completedAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        });
+
+        return {
+          month: monthStr,
+          revenue: Number(monthRevAgg._sum.revenue || 0),
+        };
+      })
+    );
 
     return {
       fuelEfficiencyKmPerL,

@@ -136,7 +136,7 @@ export default function VehiclesPage() {
       setAcquisitionCost(0);
       setShowCreate(false);
       reload();
-    } catch (err) {
+    } catch {
       setFormError("Unable to add vehicle. Please check your input and try again.");
     } finally {
       setSaving(false);
