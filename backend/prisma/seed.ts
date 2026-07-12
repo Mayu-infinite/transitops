@@ -3,33 +3,59 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+const users = [
+  {
+    name: 'Fleet Manager',
+    email: 'fleetmanager@transitops.com',
+    password: 'admin123',
+    role: Role.FLEET_MANAGER,
+  },
+  {
+    name: 'Dispatcher',
+    email: 'dispatcher@transitops.com',
+    password: 'admin123',
+    role: Role.DISPATCHER,
+  },
+  {
+    name: 'Safety Officer',
+    email: 'safetyofficer@transitops.com',
+    password: 'admin123',
+    role: Role.SAFETY_OFFICER,
+  },
+  {
+    name: 'Financial Analyst',
+    email: 'financialanalyst@transitops.com',
+    password: 'admin123',
+    role: Role.FINANCIAL_ANALYST,
+  },
+];
+
 async function main(): Promise<void> {
-  const email = 'fleetmanager@transitops.com';
-  const password = 'admin123';
+  for (const user of users) {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: user.email,
+      },
+    });
 
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
+    if (existingUser) {
+      console.warn(`${user.role} already exists.`);
+      continue;
+    }
 
-  if (existingUser) {
-    console.warn('Fleet Manager already exists.');
-    return;
+    const passwordHash = await bcrypt.hash(user.password, 10);
+
+    await prisma.user.create({
+      data: {
+        name: user.name,
+        email: user.email,
+        passwordHash,
+        role: user.role,
+      },
+    });
+
+    console.warn(`${user.role} created successfully.`);
   }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-
-  await prisma.user.create({
-    data: {
-      name: 'Fleet Manager',
-      email,
-      passwordHash,
-      role: Role.FLEET_MANAGER,
-    },
-  });
-
-  console.warn('Fleet Manager created successfully.');
 }
 
 main()

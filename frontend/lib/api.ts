@@ -5,6 +5,7 @@
 //   GET  /auth/me        (Authorization: Bearer <token>) -> user
 //
 // Configure the base URL via NEXT_PUBLIC_API_URL (see .env.local).
+
 import { getToken } from "./session";
 import type {
   AuthResponse,
@@ -18,6 +19,7 @@ export const API_BASE_URL =
 
 export class ApiError extends Error {
   status: number;
+
   constructor(message: string, status: number) {
     super(message);
     this.name = "ApiError";
@@ -25,13 +27,93 @@ export class ApiError extends Error {
   }
 }
 
-interface RequestOptions {
+export interface RequestOptions {
   method?: string;
   body?: unknown;
   /** Attach the bearer token if one is stored. */
   auth?: boolean;
   signal?: AbortSignal;
 }
+
+export async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const { method = "GET", body, auth = false, signal } = options;
+
+  const headers: Record<string, string> = {};
+
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  if (auth) {
+    const token = getToken();
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  let res: Response;
+
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal,
+    });
+  } catch {
+    throw new ApiError(
+      "Cannot reach the server. Please check your connection and try again.",
+      0,
+    );
+  }
+
+  const isJson = res.headers
+    .get("content-type")
+    ?.includes("application/json");
+
+  const data = isJson ? await res.json().catch(() => null) : null;
+
+  if (!res.ok) {
+    const message =
+      extractErrorMessage(data) ??
+      res.statusText ??
+      "Request failed";
+
+    throw new ApiError(message, res.status);
+  }
+
+  return data as T;
+}
+
+/** Alias kept for the feature API clients in lib/api/* (drivers, vehicles, …). */
+export const apiRequest = request;
+
+/** NestJS error responses look like { message: string | string[], ... }. */
+function extractErrorMessage(data: unknown): string | null {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+
+  const message = (data as { message?: unknown }).message;
+
+  if (Array.isArray(message)) {
+    return message.join(", ");
+  }
+
+  if (typeof message === "string") {
+    return message;
+  }
+
+  return null;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Shared response helpers                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** Backend list envelope for paginated resources (drivers, fuel, expenses). */
 export interface Paginated<T> {
@@ -54,61 +136,48 @@ export const toNum = (value: unknown): number =>
 export const toISO = (value: string | Date): string =>
   new Date(value).toISOString();
 
-export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = "GET", body, auth = false, signal } = options;
+/* -------------------------------------------------------------------------- */
+/* Shared HTTP verb helpers for feature APIs                                  */
+/* -------------------------------------------------------------------------- */
 
-  const headers: Record<string, string> = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (auth) {
-    const token = getToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
+export const api = {
+  get<T>(path: string, auth = true) {
+    return request<T>(path, { auth });
+  },
 
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      signal,
+  post<T>(path: string, body: unknown, auth = true) {
+    return request<T>(path, {
+      method: "POST",
+      body,
+      auth,
     });
-  } catch {
-    throw new ApiError(
-      "Cannot reach the server. Please check your connection and try again.",
-      0,
-    );
-  }
+  },
 
-  const isJson = res.headers
-    .get("content-type")
-    ?.includes("application/json");
-  const data = isJson ? await res.json().catch(() => null) : null;
+  patch<T>(path: string, body: unknown, auth = true) {
+    return request<T>(path, {
+      method: "PATCH",
+      body,
+      auth,
+    });
+  },
 
-  if (!res.ok) {
-    const message = extractErrorMessage(data) ?? res.statusText ?? "Request failed";
-    throw new ApiError(message, res.status);
-  }
-
-  return data as T;
-}
-
-/** NestJS error responses look like { message: string | string[], ... }. */
-function extractErrorMessage(data: unknown): string | null {
-  if (!data || typeof data !== "object") return null;
-  const message = (data as { message?: unknown }).message;
-  if (Array.isArray(message)) return message.join(", ");
-  if (typeof message === "string") return message;
-  return null;
-}
+  delete<T>(path: string, auth = true) {
+    return request<T>(path, {
+      method: "DELETE",
+      auth,
+    });
+  },
+};
 
 export const authApi = {
   login(payload: LoginPayload) {
-    return apiRequest<AuthResponse>("/auth/login", {
+    return request<AuthResponse>("/auth/login", {
       method: "POST",
       body: payload,
     });
   },
+
   me() {
-    return apiRequest<User>("/auth/me", { auth: true });
+    return request<User>("/auth/me", { auth: true });
   },
 };

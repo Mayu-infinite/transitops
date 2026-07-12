@@ -8,7 +8,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto, CompleteTripDto } from './dto/update-trip.dto';
 import { QueryTripDto } from './dto/query-trip.dto';
-import { Prisma, TripStatus, VehicleStatus, DriverStatus } from '@prisma/client';
+import {
+  Prisma,
+  TripStatus,
+  VehicleStatus,
+  DriverStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class TripsService {
@@ -18,16 +23,14 @@ export class TripsService {
   // CREATE
   // ==========================================
   async create(dto: CreateTripDto) {
-    const vehicle = await this.prisma.vehicle.findUnique({
-      where: { id: dto.vehicleId },
-    });
+    const [vehicle, driver] = await Promise.all([
+      this.prisma.vehicle.findUnique({ where: { id: dto.vehicleId } }),
+      this.prisma.driver.findUnique({ where: { id: dto.driverId } }),
+    ]);
+
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found.');
     }
-
-    const driver = await this.prisma.driver.findUnique({
-      where: { id: dto.driverId },
-    });
     if (!driver) {
       throw new NotFoundException('Driver not found.');
     }
@@ -42,7 +45,8 @@ export class TripsService {
       data: {
         ...dto,
         status: TripStatus.DRAFT,
-      } as Prisma.TripUncheckedCreateInput,
+        createdBy: dto.createdBy || '',
+      },
     });
   }
 
@@ -53,7 +57,7 @@ export class TripsService {
     const { status, search, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.TripWhereInput = {};
     if (status) {
       where.status = status;
     }
@@ -209,7 +213,7 @@ export class TripsService {
       throw new BadRequestException('Trip is already completed or cancelled.');
     }
 
-    const updates: any[] = [
+    const updates: Prisma.PrismaPromise<unknown>[] = [
       this.prisma.trip.update({
         where: { id },
         data: { status: TripStatus.CANCELLED },
@@ -238,15 +242,29 @@ export class TripsService {
   // DASHBOARD & HELPERS
   // ==========================================
   async getCounts() {
-    const [total, draft, dispatched, completed, cancelled] = await Promise.all([
-      this.prisma.trip.count(),
-      this.prisma.trip.count({ where: { status: TripStatus.DRAFT } }),
-      this.prisma.trip.count({ where: { status: TripStatus.DISPATCHED } }),
-      this.prisma.trip.count({ where: { status: TripStatus.COMPLETED } }),
-      this.prisma.trip.count({ where: { status: TripStatus.CANCELLED } }),
-    ]);
+    const grouped = await this.prisma.trip.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    });
 
-    return { total, draft, dispatched, completed, cancelled };
+    const result = {
+      total: 0,
+      draft: 0,
+      dispatched: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+
+    grouped.forEach((g) => {
+      const count = g._count.status;
+      result.total += count;
+      if (g.status === TripStatus.DRAFT) result.draft = count;
+      if (g.status === TripStatus.DISPATCHED) result.dispatched = count;
+      if (g.status === TripStatus.COMPLETED) result.completed = count;
+      if (g.status === TripStatus.CANCELLED) result.cancelled = count;
+    });
+
+    return result;
   }
 
   async getActiveTrips() {

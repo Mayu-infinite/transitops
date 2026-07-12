@@ -7,42 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  FLEET_MANAGER
-  DISPATCHER
-  SAFETY_OFFICER
-  FINANCIAL_ANALYST
-}
-
 model User {
-  id           String   @id @default(uuid())
+  id           String        @id @default(uuid())
   name         String
-  email        String   @unique
+  email        String        @unique
   passwordHash String
   role         Role
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  trips       Trip[]
-  maintenance Maintenance[]
-}
-
-enum VehicleType {
-  VAN
-  TRUCK
-  BUS
-  MOTORCYCLE
-  PICKUP
-  TRAILER
-  OTHER
-}
-
-enum VehicleStatus {
-  AVAILABLE
-  ON_TRIP
-  IN_SHOP
-  RETIRED
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  maintenance  Maintenance[]
+  Trip         Trip[]
 }
 
 model Vehicle {
@@ -53,25 +27,17 @@ model Vehicle {
   type               VehicleType
   maxLoadCapacity    Float
   odometer           Float
-  acquisitionCost    Decimal
+  acquisitionCost    Decimal       @db.Decimal(12, 2)
   status             VehicleStatus @default(AVAILABLE)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
-
-  trips        Trip[]
-  maintenances Maintenance[]
-  fuelLogs     FuelLog[]
-  expenses     Expense[]
+  expenses           Expense[]
+  fuelLogs           FuelLog[]
+  maintenances       Maintenance[]
+  trips              Trip[]
 
   @@index([status])
   @@index([type])
-}
-
-enum DriverStatus {
-  AVAILABLE
-  ON_TRIP
-  ON_LEAVE
-  TERMINATED
 }
 
 model Driver {
@@ -81,28 +47,17 @@ model Driver {
   licenseCategory String
   licenseExpiry   DateTime
   contactNumber   String
-  safetyScore     Float        @default(100)
+  safetyScore     Float
   status          DriverStatus @default(AVAILABLE)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-
-  trips Trip[]
+  trips           Trip[]
 
   @@index([status])
 }
 
-enum TripStatus {
-  DRAFT
-  DISPATCHED
-  COMPLETED
-  CANCELLED
-}
-
 model Trip {
   id              String     @id @default(cuid())
-  vehicleId       String
-  driverId        String
-  createdBy       String
   source          String
   destination     String
   cargoWeight     Float
@@ -114,45 +69,32 @@ model Trip {
   completedAt     DateTime?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
-
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
-  driver  Driver  @relation(fields: [driverId], references: [id])
-  creator User    @relation(fields: [createdBy], references: [id])
+  vehicleId       String
+  driverId        String
+  createdById     String
+  User            User       @relation(fields: [createdById], references: [id])
+  driver          Driver     @relation(fields: [driverId], references: [id])
+  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id])
 
   @@index([status])
   @@index([vehicleId])
   @@index([driverId])
 }
 
-enum MaintenanceStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CANCELLED
-}
-
 model Maintenance {
   id          String            @id @default(cuid())
-  vehicleId   String
-  createdById String?
-  status      MaintenanceStatus @default(OPEN)
-  description String?
-  cost        Decimal?          @db.Decimal(12, 2)
-  startDate   DateTime?
+  description String
+  cost        Decimal           @db.Decimal(12, 2)
+  startDate   DateTime
   endDate     DateTime?
+  status      MaintenanceStatus @default(OPEN)
   createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
-  createdBy User?   @relation(fields: [createdById], references: [id])
+  vehicleId   String
+  createdById String
+  createdBy   User              @relation(fields: [createdById], references: [id])
+  vehicle     Vehicle           @relation(fields: [vehicleId], references: [id])
 
   @@index([status])
-}
-
-enum ExpenseType {
-  TOLL
-  INSURANCE
-  OTHER
 }
 
 model FuelLog {
@@ -163,8 +105,7 @@ model FuelLog {
   fuelDate  DateTime
   createdAt DateTime @default(now())
   vehicleId String
-
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
 
   @@index([fuelDate])
 }
@@ -177,8 +118,55 @@ model Expense {
   expenseDate DateTime
   createdAt   DateTime    @default(now())
   vehicleId   String
-
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle     Vehicle     @relation(fields: [vehicleId], references: [id])
 
   @@index([expenseDate])
+}
+
+enum Role {
+  FLEET_MANAGER
+  DISPATCHER
+  SAFETY_OFFICER
+  FINANCIAL_ANALYST
+}
+
+enum VehicleType {
+  TRUCK
+  VAN
+  PICKUP
+  TRAILER
+  OTHER
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  ON_TRIP
+  IN_SHOP
+  RETIRED
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+  SUSPENDED
+}
+
+enum TripStatus {
+  DRAFT
+  DISPATCHED
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ExpenseType {
+  TOLL
+  INSURANCE
+  OTHER
 }

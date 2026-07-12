@@ -174,36 +174,22 @@ export class VehiclesService {
    * Dashboard counts
    */
   async getCounts() {
-    const [total, available, onTrip, inShop, retired] = await Promise.all([
-      this.prisma.vehicle.count(),
-      this.prisma.vehicle.count({
-        where: {
-          status: VehicleStatus.AVAILABLE,
-        },
-      }),
-      this.prisma.vehicle.count({
-        where: {
-          status: VehicleStatus.ON_TRIP,
-        },
-      }),
-      this.prisma.vehicle.count({
-        where: {
-          status: VehicleStatus.IN_SHOP,
-        },
-      }),
-      this.prisma.vehicle.count({
-        where: {
-          status: VehicleStatus.RETIRED,
-        },
-      }),
-    ]);
+    const grouped = await this.prisma.vehicle.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    });
 
-    return {
-      total,
-      available,
-      onTrip,
-      inShop,
-      retired,
-    };
+    const result = { total: 0, available: 0, onTrip: 0, inShop: 0, retired: 0 };
+
+    grouped.forEach((g) => {
+      const count = g._count.status;
+      result.total += count;
+      if (g.status === VehicleStatus.AVAILABLE) result.available = count;
+      if (g.status === VehicleStatus.ON_TRIP) result.onTrip = count;
+      if (g.status === VehicleStatus.IN_SHOP) result.inShop = count;
+      if (g.status === VehicleStatus.RETIRED) result.retired = count;
+    });
+
+    return result;
   }
 }
