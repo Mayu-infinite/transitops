@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { FuelExpensesController } from '../src/fuel-expenses/fuel-expenses.controller';
 import { FuelExpensesService } from '../src/fuel-expenses/fuel-expenses.service';
 

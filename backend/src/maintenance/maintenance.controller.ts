@@ -6,15 +6,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
-import { Role } from '@prisma/client';
-
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { MaintenanceService } from './maintenance.service';
 
@@ -26,9 +19,7 @@ import { QueryMaintenanceDto } from './dto/query-maintenance.dto';
 @ApiBearerAuth()
 @Controller('maintenance')
 export class MaintenanceController {
-  constructor(
-    private readonly maintenanceService: MaintenanceService,
-  ) {}
+  constructor(private readonly maintenanceService: MaintenanceService) {}
 
   @Get()
   @ApiOperation({
@@ -47,35 +38,26 @@ export class MaintenanceController {
   }
 
   @Post()
-    @ApiOperation({
-    summary:
-      'Open maintenance and automatically move vehicle to IN_SHOP',
+  @ApiOperation({
+    summary: 'Open maintenance and automatically move vehicle to IN_SHOP',
   })
-  create(
-    @Body() dto: CreateMaintenanceDto,
-  ) {
+  create(@Body() dto: CreateMaintenanceDto) {
     return this.maintenanceService.openMaintenance(dto);
   }
 
   @Patch(':id')
-    @ApiOperation({
+  @ApiOperation({
     summary: 'Update maintenance record',
   })
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateMaintenanceDto,
-  ) {
+  update(@Param('id') id: string, @Body() dto: UpdateMaintenanceDto) {
     return this.maintenanceService.update(id, dto);
   }
 
   @Patch(':id/close')
-    @ApiOperation({
-    summary:
-      'Close maintenance and restore vehicle availability',
+  @ApiOperation({
+    summary: 'Close maintenance and restore vehicle availability',
   })
-  close(
-    @Param('id') id: string,
-  ) {
+  close(@Param('id') id: string) {
     return this.maintenanceService.closeMaintenance(id);
   }
 }

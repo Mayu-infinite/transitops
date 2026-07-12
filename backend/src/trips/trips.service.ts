@@ -33,10 +33,12 @@ export class TripsService {
     }
 
     if (dto.cargoWeight > vehicle.maxLoadCapacity) {
-      throw new BadRequestException('Cargo weight exceeds vehicle max load capacity.');
+      throw new BadRequestException(
+        'Cargo weight exceeds vehicle max load capacity.',
+      );
     }
 
-    return this.prisma.trip.create({
+    return await this.prisma.trip.create({
       data: {
         ...dto,
         status: TripStatus.DRAFT,
@@ -60,7 +62,11 @@ export class TripsService {
       where.OR = [
         { source: { contains: search, mode: 'insensitive' } },
         { destination: { contains: search, mode: 'insensitive' } },
-        { vehicle: { registrationNumber: { contains: search, mode: 'insensitive' } } },
+        {
+          vehicle: {
+            registrationNumber: { contains: search, mode: 'insensitive' },
+          },
+        },
         { driver: { name: { contains: search, mode: 'insensitive' } } },
       ];
     }
@@ -98,7 +104,7 @@ export class TripsService {
   // ==========================================
   async update(id: string, dto: UpdateTripDto) {
     await this.findOne(id);
-    return this.prisma.trip.update({
+    return await this.prisma.trip.update({
       where: { id },
       data: dto,
     });
@@ -131,10 +137,12 @@ export class TripsService {
     }
 
     if (trip.cargoWeight > vehicle.maxLoadCapacity) {
-      throw new ConflictException('Cargo weight exceeds vehicle max load capacity.');
+      throw new ConflictException(
+        'Cargo weight exceeds vehicle max load capacity.',
+      );
     }
 
-    return this.prisma.$transaction([
+    return await this.prisma.$transaction([
       this.prisma.trip.update({
         where: { id },
         data: {
@@ -163,7 +171,7 @@ export class TripsService {
       throw new BadRequestException('Only DISPATCHED trips can be completed.');
     }
 
-    return this.prisma.$transaction([
+    return await this.prisma.$transaction([
       this.prisma.trip.update({
         where: { id },
         data: {
@@ -194,7 +202,10 @@ export class TripsService {
   async cancel(id: string) {
     const trip = await this.findOne(id);
 
-    if (trip.status === TripStatus.COMPLETED || trip.status === TripStatus.CANCELLED) {
+    if (
+      trip.status === TripStatus.COMPLETED ||
+      trip.status === TripStatus.CANCELLED
+    ) {
       throw new BadRequestException('Trip is already completed or cancelled.');
     }
 
@@ -210,17 +221,17 @@ export class TripsService {
         this.prisma.vehicle.update({
           where: { id: trip.vehicleId },
           data: { status: VehicleStatus.AVAILABLE },
-        })
+        }),
       );
       updates.push(
         this.prisma.driver.update({
           where: { id: trip.driverId },
           data: { status: DriverStatus.AVAILABLE },
-        })
+        }),
       );
     }
 
-    return this.prisma.$transaction(updates);
+    return await this.prisma.$transaction(updates);
   }
 
   // ==========================================
@@ -239,7 +250,7 @@ export class TripsService {
   }
 
   async getActiveTrips() {
-    return this.prisma.trip.findMany({
+    return await this.prisma.trip.findMany({
       where: { status: TripStatus.DISPATCHED },
       include: { vehicle: true, driver: true },
       orderBy: { dispatchedAt: 'desc' },
@@ -247,7 +258,7 @@ export class TripsService {
   }
 
   async findPendingTrips() {
-    return this.prisma.trip.findMany({
+    return await this.prisma.trip.findMany({
       where: { status: TripStatus.DRAFT },
       include: { vehicle: true, driver: true },
       orderBy: { createdAt: 'desc' },

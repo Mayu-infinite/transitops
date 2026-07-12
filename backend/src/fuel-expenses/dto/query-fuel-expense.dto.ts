@@ -1,32 +1,32 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { MaintenanceStatus } from '@prisma/client';
+import { ExpenseType } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-export class QueryMaintenanceDto {
+export class QueryFuelExpenseDto {
   @ApiPropertyOptional({
-    description: 'Search by maintenance description',
-    example: 'Oil',
+    description: 'Vehicle ID',
+    example: 'clz1abc123xyz456',
+  })
+  @IsOptional()
+  @IsString()
+  vehicleId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Search expense description',
+    example: 'Toll',
   })
   @IsOptional()
   @IsString()
   search?: string;
 
   @ApiPropertyOptional({
-    enum: MaintenanceStatus,
-    example: MaintenanceStatus.OPEN,
+    enum: ExpenseType,
+    example: ExpenseType.TOLL,
   })
   @IsOptional()
-  @IsEnum(MaintenanceStatus)
-  status?: MaintenanceStatus;
-
-  @ApiPropertyOptional({
-    example: 'clz1abc123xyz456',
-    description: 'Vehicle ID',
-  })
-  @IsOptional()
-  @IsString()
-  vehicleId?: string;
+  @IsEnum(ExpenseType)
+  type?: ExpenseType;
 
   @ApiPropertyOptional({
     example: 1,

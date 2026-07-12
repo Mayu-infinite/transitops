@@ -3,14 +3,11 @@ import {
   Get,
   Post,
   Patch,
-  Delete,
   Param,
   Body,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { TripsService } from './trips.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto, CompleteTripDto } from './dto/update-trip.dto';
@@ -23,7 +20,7 @@ export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
-    @ApiOperation({ summary: 'Create a new trip (DRAFT)' })
+  @ApiOperation({ summary: 'Create a new trip (DRAFT)' })
   create(@Body() dto: CreateTripDto) {
     return this.tripsService.create(dto);
   }
@@ -59,25 +56,25 @@ export class TripsController {
   }
 
   @Patch(':id')
-    @ApiOperation({ summary: 'Update trip details' })
+  @ApiOperation({ summary: 'Update trip details' })
   update(@Param('id') id: string, @Body() dto: UpdateTripDto) {
     return this.tripsService.update(id, dto);
   }
 
   @Post(':id/dispatch')
-    @ApiOperation({ summary: 'Dispatch a trip' })
+  @ApiOperation({ summary: 'Dispatch a trip' })
   dispatch(@Param('id') id: string) {
     return this.tripsService.dispatch(id);
   }
 
   @Post(':id/complete')
-    @ApiOperation({ summary: 'Complete a trip' })
+  @ApiOperation({ summary: 'Complete a trip' })
   complete(@Param('id') id: string, @Body() dto: CompleteTripDto) {
     return this.tripsService.complete(id, dto);
   }
 
   @Post(':id/cancel')
-    @ApiOperation({ summary: 'Cancel a trip' })
+  @ApiOperation({ summary: 'Cancel a trip' })
   cancel(@Param('id') id: string) {
     return this.tripsService.cancel(id);
   }

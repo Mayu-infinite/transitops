@@ -9,7 +9,6 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  IsUUID,
   MaxLength,
 } from 'class-validator';
 
@@ -18,7 +17,7 @@ export class CreateMaintenanceDto {
     example: 'clz1abc123xyz456',
     description: 'Vehicle ID',
   })
-  @IsString() // Use IsUUID() if your IDs are UUIDs instead of cuid()
+  @IsString() // Use () if your IDs are UUIDs instead of cuid()
   @IsNotEmpty()
   vehicleId: string;
 
