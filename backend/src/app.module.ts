@@ -6,6 +6,11 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ReportsModule } from './reports/reports.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
+import { DriversModule } from './drivers/drivers.module';
+import { TripsModule } from './trips/trips.module';
+import { MaintenanceModule } from './maintenance/maintenance.module';
+import { FuelExpensesModule } from './fuel-expenses/fuel-expenses.module';
 
 @Module({
   imports: [
@@ -18,6 +23,11 @@ import { ReportsModule } from './reports/reports.module';
     UsersModule,
     AuthModule,
     ReportsModule,
+    VehiclesModule,
+    DriversModule,
+    TripsModule,
+    MaintenanceModule,
+    FuelExpensesModule,
   ],
 })
 export class AppModule {}
