@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Role } from '@prisma/client';
+import { type Role } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { UsersService } from '../../users/users.service';
 
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import type { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 export interface AuthenticatedUser {
   id: string;
@@ -37,9 +37,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     try {
+      this.logger.debug(
+        `Validating JWT for user id: ${payload.sub} (${payload.email})`,
+      );
+
       const user = await this.usersService.findById(payload.sub);
 
       if (!user) {
+        this.logger.warn(
+          `JWT validation failed. User with id ${payload.sub} does not exist.`,
+        );
+
         throw new UnauthorizedException('Invalid authentication token.');
       }
 
@@ -50,11 +58,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: user.role,
       };
     } catch (error) {
-      this.logger.error('Failed to validate JWT.', error);
-
       if (error instanceof UnauthorizedException) {
         throw error;
       }
+
+      this.logger.error('Unexpected error while validating JWT.', error);
 
       throw new InternalServerErrorException(
         'Unable to validate authentication token.',
