@@ -51,7 +51,7 @@ export class AuthService {
     email: string;
     role: string;
   }) {
-    return this.jwtService.signAsync({
+    return await this.jwtService.signAsync({
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -59,6 +59,6 @@ export class AuthService {
   }
 
   async hashPassword(password: string) {
-    return bcrypt.hash(password, 10);
+    return await bcrypt.hash(password, 10);
   }
 }
