@@ -9,8 +9,8 @@ import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
- * Protected application shell. Redirects unauthenticated users to /login and
- * renders the sidebar + top bar around the routed page.
+ * Protected application shell: sidebar + top bar around the routed page.
+ * Unauthenticated users are redirected to /login.
  */
 export default function AppLayout({
   children,
@@ -22,9 +22,7 @@ export default function AppLayout({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/login");
-    }
+    if (status === "unauthenticated") router.replace("/login");
   }, [status, router]);
 
   if (status !== "authenticated" || !user) {
@@ -36,9 +34,9 @@ export default function AppLayout({
   }
 
   return (
-    <div className="flex min-h-dvh">
+    <div className="flex min-h-dvh bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface lg:block">
+      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface-secondary/70 lg:block">
         <div className="sticky top-0 h-dvh overflow-y-auto">
           <AppSidebar role={user.role} />
         </div>
@@ -48,11 +46,11 @@ export default function AppLayout({
       {mobileNavOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-overlay/60"
+            className="absolute inset-0 bg-black/60"
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute left-0 top-0 h-full w-64 border-r border-border bg-surface">
+          <div className="absolute left-0 top-0 h-full w-64 border-r border-border bg-surface-secondary">
             <AppSidebar
               role={user.role}
               onNavigate={() => setMobileNavOpen(false)}
@@ -62,7 +60,7 @@ export default function AppLayout({
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur sm:px-6">
           <Button
             isIconOnly
             variant="ghost"
@@ -78,8 +76,26 @@ export default function AppLayout({
             </svg>
           </Button>
 
-          <div className="flex flex-1 items-center justify-end gap-2">
+          {/* Search */}
+          <div className="relative w-full max-w-md">
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search…"
+              aria-label="Search"
+              className="h-9 w-full rounded-lg border border-border bg-surface pl-9 pr-3 text-sm text-foreground placeholder:text-muted outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
+            <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
             <UserMenu />
           </div>
         </header>

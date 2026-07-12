@@ -45,7 +45,7 @@ export function getStoredUser(): User | null {
   }
 }
 
-/** Persist a full session (called on login/register success). */
+/** Persist a full session after a successful sign-in. */
 export function saveSession(token: string, user: User) {
   if (!isBrowser()) return;
   window.localStorage.setItem(TOKEN_KEY, token);
