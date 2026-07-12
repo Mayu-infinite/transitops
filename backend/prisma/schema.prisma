@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -21,9 +20,9 @@ model User {
   role         UserRole @default(DISPATCHER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
-  trips        Trip[]
-  maintenance  Maintenance[]
+
+  trips       Trip[]
+  maintenance Maintenance[]
 }
 
 enum VehicleType {
@@ -55,11 +54,11 @@ model Vehicle {
   status             VehicleStatus @default(AVAILABLE)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
-  
-  trips              Trip[]
-  maintenances       Maintenance[]
-  fuelLogs           FuelLog[]
-  expenses           Expense[]
+
+  trips        Trip[]
+  maintenances Maintenance[]
+  fuelLogs     FuelLog[]
+  expenses     Expense[]
 
   @@index([status])
   @@index([type])
@@ -83,8 +82,8 @@ model Driver {
   status          DriverStatus @default(AVAILABLE)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  
-  trips           Trip[]
+
+  trips Trip[]
 
   @@index([status])
 }
@@ -113,9 +112,9 @@ model Trip {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id])
-  driver          Driver     @relation(fields: [driverId], references: [id])
-  creator         User       @relation(fields: [createdBy], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  driver  Driver  @relation(fields: [driverId], references: [id])
+  creator User    @relation(fields: [createdBy], references: [id])
 
   @@index([status])
   @@index([vehicleId])
@@ -141,8 +140,8 @@ model Maintenance {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  vehicle     Vehicle           @relation(fields: [vehicleId], references: [id])
-  createdBy   User?             @relation(fields: [createdById], references: [id])
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  createdBy User?   @relation(fields: [createdById], references: [id])
 
   @@index([status])
 }
@@ -162,7 +161,7 @@ model FuelLog {
   createdAt DateTime @default(now())
   vehicleId String
 
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 
   @@index([fuelDate])
 }
@@ -176,7 +175,7 @@ model Expense {
   createdAt   DateTime    @default(now())
   vehicleId   String
 
-  vehicle     Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 
   @@index([expenseDate])
 }

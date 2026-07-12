@@ -13,7 +13,6 @@ import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { QueryDriverDto } from './dto/query-driver.dto';
 
-// ponytail: removed non-existent auth guards/decorators for MVP
 @ApiTags('Drivers')
 @ApiBearerAuth()
 @Controller('drivers')

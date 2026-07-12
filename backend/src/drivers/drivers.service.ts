@@ -203,7 +203,6 @@ export class DriversService {
    * Dashboard counts
    */
   async getCounts() {
-    // ponytail: simplified counts
     const [
       total,
       available,
