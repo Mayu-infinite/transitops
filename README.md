@@ -358,15 +358,7 @@ transitops/
 - Collaborative module development
 - Frequent commits during the hackathon
 
-## Team Contribution Summary
 
-| Member | Contribution |
-|---------|--------------|
-| **Mayuri** | Fleet Management, Trip Management, Frontend Views, API Integration |
-| **Saichandana** | Driver Management, Maintenance, Fuel & Expenses, Reports & Analytics, Settings & RBAC |
-| **Backend Team** | Shared collaboration across backend modules and Reports APIs |
-
----
 
 # 🎯 Objective
 
