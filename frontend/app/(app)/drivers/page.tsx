@@ -5,12 +5,16 @@
 // Rule: expired license OR Terminated -> blocked from trip assignment.
 // ─────────────────────────────────────────────────────────────────────────
 import { useMemo, useState } from "react";
-import { Button, Card, Input } from "@heroui/react";
+import { Button, Card, Input, Label } from "@heroui/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { QueryState } from "@/components/ui/query-state";
-import { DRIVER_STATUS_TONE, type Driver, type DriverStatus } from "@/lib/domain";
+import {
+  DRIVER_STATUS_TONE,
+  type Driver,
+  type DriverStatus,
+} from "@/lib/domain";
 import { createDriver, listDrivers } from "@/lib/api/drivers";
 import { useApiData } from "@/lib/use-api";
 import { fmtDate } from "@/lib/format";
@@ -24,10 +28,18 @@ const STATUS_LABEL: Record<DriverStatus, string> = {
 };
 
 const columns: Column<Driver>[] = [
-  { key: "name", header: "Driver", render: (r) => <span className="font-medium">{r.name}</span> },
+  {
+    key: "name",
+    header: "Driver",
+    render: (r) => <span className="font-medium">{r.name}</span>,
+  },
   { key: "licenseNumber", header: "License No." },
   { key: "licenseCategory", header: "Category" },
-  { key: "licenseExpiry", header: "Expiry", render: (r) => fmtDate(r.licenseExpiry) },
+  {
+    key: "licenseExpiry",
+    header: "Expiry",
+    render: (r) => fmtDate(r.licenseExpiry),
+  },
   { key: "contactNumber", header: "Contact" },
   {
     key: "safetyScore",
@@ -39,7 +51,10 @@ const columns: Column<Driver>[] = [
     key: "status",
     header: "Status",
     render: (r) => (
-      <StatusBadge tone={DRIVER_STATUS_TONE[r.status]} label={STATUS_LABEL[r.status]} />
+      <StatusBadge
+        tone={DRIVER_STATUS_TONE[r.status]}
+        label={STATUS_LABEL[r.status]}
+      />
     ),
   },
 ];
@@ -56,7 +71,9 @@ export default function DriversPage() {
   const [status, setStatus] = useState<DriverStatus>("AVAILABLE");
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const { data, loading, error, reload } = useApiData<Driver[]>(() => listDrivers());
+  const { data, loading, error, reload } = useApiData<Driver[]>(() =>
+    listDrivers(),
+  );
 
   const rows = useMemo(() => {
     const all = data ?? [];
@@ -72,7 +89,15 @@ export default function DriversPage() {
   const exportCsv = () =>
     downloadCsv(
       "transitops-drivers",
-      ["Driver", "License No.", "Category", "Expiry", "Contact", "Safety", "Status"],
+      [
+        "Driver",
+        "License No.",
+        "Category",
+        "Expiry",
+        "Contact",
+        "Safety",
+        "Status",
+      ],
       rows.map((d) => [
         d.name,
         d.licenseNumber,
@@ -86,7 +111,13 @@ export default function DriversPage() {
 
   const createDriverProfile = async () => {
     setFormError(null);
-    if (!name || !licenseNumber || !licenseCategory || !licenseExpiry || !contactNumber) {
+    if (
+      !name ||
+      !licenseNumber ||
+      !licenseCategory ||
+      !licenseExpiry ||
+      !contactNumber
+    ) {
       setFormError("Please fill in all driver profile fields.");
       return;
     }
@@ -111,7 +142,7 @@ export default function DriversPage() {
       setStatus("AVAILABLE");
       setShowCreate(false);
       reload();
-    } catch (err) {
+    } catch {
       setFormError("Unable to add driver. Please verify details and retry.");
     } finally {
       setSaving(false);
@@ -125,10 +156,19 @@ export default function DriversPage() {
         description="Manage driver profiles, licenses, and safety records."
         actions={
           <>
-            <Button variant="secondary" size="sm" onPress={exportCsv} isDisabled={rows.length === 0}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={exportCsv}
+              isDisabled={rows.length === 0}
+            >
               Export CSV
             </Button>
-            <Button variant="primary" size="sm" onPress={() => setShowCreate((current) => !current)}>
+            <Button
+              variant="primary"
+              size="sm"
+              onPress={() => setShowCreate((current) => !current)}
+            >
               + Add Driver
             </Button>
           </>
@@ -138,46 +178,93 @@ export default function DriversPage() {
       {showCreate ? (
         <Card className="mb-5 border border-border/80 bg-surface/95 p-5 shadow-sm shadow-black/5">
           <div className="grid gap-4 md:grid-cols-2">
-            <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <Input
-              placeholder="License Number"
-              value={licenseNumber}
-              onChange={(e) => setLicenseNumber(e.target.value)}
-            />
-            <Input
-              placeholder="License Category"
-              value={licenseCategory}
-              onChange={(e) => setLicenseCategory(e.target.value)}
-            />
-            <Input
-              type="date"
-              placeholder="License Expiry"
-              value={licenseExpiry}
-              onChange={(e) => setLicenseExpiry(e.target.value)}
-            />
-            <Input
-              placeholder="Contact Number"
-              value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
-            />
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="Safety Score"
-              value={safetyScore || ""}
-              onChange={(e) => setSafetyScore(Number(e.target.value))}
-            />
-            <Input
-              placeholder="Status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as DriverStatus)}
-            />
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-name">Name</Label>
+              <Input
+                id="driver-name"
+                name="name"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-license-number">License Number</Label>
+              <Input
+                id="driver-license-number"
+                name="licenseNumber"
+                placeholder="License Number"
+                value={licenseNumber}
+                onChange={(e) => setLicenseNumber(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-license-category">License Category</Label>
+              <Input
+                id="driver-license-category"
+                name="licenseCategory"
+                placeholder="License Category"
+                value={licenseCategory}
+                onChange={(e) => setLicenseCategory(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-license-expiry">License Expiry Date</Label>
+              <Input
+                id="driver-license-expiry"
+                name="licenseExpiry"
+                type="date"
+                value={licenseExpiry}
+                onChange={(e) => setLicenseExpiry(e.target.value)}
+              />
+              <span className="text-xs text-muted">
+                Pick the date the driver’s license expires.
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-contact-number">Contact Number</Label>
+              <Input
+                id="driver-contact-number"
+                name="contactNumber"
+                placeholder="Contact Number"
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-safety-score">Safety Score</Label>
+              <Input
+                id="driver-safety-score"
+                name="safetyScore"
+                type="number"
+                inputMode="numeric"
+                placeholder="Safety Score"
+                value={safetyScore || ""}
+                onChange={(e) => setSafetyScore(Number(e.target.value))}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="driver-status">Status</Label>
+              <Input
+                id="driver-status"
+                name="status"
+                placeholder="Status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as DriverStatus)}
+              />
+            </div>
           </div>
           <div className="mt-4 flex items-center gap-3">
-            <Button variant="primary" onPress={createDriverProfile} isDisabled={saving}>
+            <Button
+              variant="primary"
+              onPress={createDriverProfile}
+              isDisabled={saving}
+            >
               {saving ? "Saving..." : "Save Driver"}
             </Button>
-            {formError ? <span className="text-sm text-red-500">{formError}</span> : null}
+            {formError ? (
+              <span className="text-sm text-red-500">{formError}</span>
+            ) : null}
           </div>
         </Card>
       ) : null}
