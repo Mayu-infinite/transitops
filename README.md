@@ -1,87 +1,210 @@
-# TransitOps
+# 🚛 TransitOps
 
-**TransitOps** is a Smart Transport Operations Platform developed for the **Odoo Hackathon 2026**. The platform digitizes fleet operations by providing centralized management for vehicles, drivers, trips, maintenance, fuel logs, expenses, and operational analytics.
+> **Smart Transport Operations Platform**  
+> Developed for **Odoo Hackathon 2026**
+
+TransitOps is an end-to-end transport operations platform that digitizes fleet operations by centralizing vehicle, driver, trip, maintenance, fuel, and expense management into a single intelligent system.
+
+Traditional transport companies often rely on spreadsheets and manual records, leading to scheduling conflicts, missed maintenance, duplicate vehicle assignments, expired driver licenses, and poor operational visibility.
+
+TransitOps solves these challenges through automated business validations, centralized fleet management, and real-time analytics, enabling logistics teams to operate efficiently and make data-driven decisions.
 
 ---
 
-## 🚀 Tech Stack
+# 🌟 Features
 
-### Frontend
+### 🔐 Authentication & Security
+- JWT Authentication
+- Role-Based Access Control (RBAC)
+- Secure API authorization
+
+### 📊 Dashboard
+- Fleet KPIs
+- Active Trips
+- Fleet Utilization
+- Drivers on Duty
+- Operational Cost Summary
+- Analytics Filters
+
+### 🚚 Vehicle Management
+- Register and manage fleet vehicles
+- Track vehicle status
+- Monitor load capacity
+- Odometer tracking
+- Vehicle lifecycle management
+
+### 👨‍✈️ Driver Management
+- Driver profiles
+- License validation
+- License expiry tracking
+- Safety score monitoring
+- Driver availability
+
+### 🛣️ Trip Management
+- Trip creation
+- Vehicle assignment
+- Driver assignment
+- Dispatch workflow
+- Trip completion
+- Trip cancellation
+
+### 🔧 Maintenance
+- Maintenance scheduling
+- Maintenance history
+- Automatic vehicle availability management
+
+### ⛽ Fuel & Expense Tracking
+- Fuel logs
+- Expense records
+- Operational cost calculation
+- Fuel efficiency monitoring
+
+### 📈 Reports & Analytics
+- Fleet utilization
+- Operational costs
+- Fuel efficiency
+- Vehicle ROI
+- CSV Export
+
+---
+
+# 🛡️ Business Rules Engine
+
+TransitOps automatically enforces operational rules to maintain fleet integrity.
+
+### Asset Availability
+- Retired vehicles cannot be dispatched.
+- Vehicles under maintenance cannot be assigned.
+- Suspended drivers cannot be assigned.
+- Drivers with expired licenses cannot be assigned.
+
+### No Double Booking
+- Vehicles already on an active trip cannot be dispatched again.
+- Drivers already assigned to an active trip cannot be assigned again.
+
+### Capacity Validation
+Trips cannot be created if cargo exceeds the vehicle's maximum load capacity.
+
+### Automated Status Transitions
+
+| Action | Vehicle Status | Driver Status |
+|---------|---------------|--------------|
+| Dispatch Trip | On Trip | On Trip |
+| Complete Trip | Available | Available |
+| Cancel Trip | Available | Available |
+| Start Maintenance | In Shop | — |
+| Close Maintenance | Available | — |
+
+---
+
+# 🛠 Tech Stack
+
+## Frontend
 - Next.js
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- HeroUI
 
-### Backend
+## Backend
 - NestJS
 - Prisma ORM
 - PostgreSQL
-
-## 📌 Features
-
-- Authentication & Role-Based Access Control (RBAC)
-- Dashboard with Fleet KPIs
-- Vehicle Registry Management
-- Driver Management
-- Trip Management
-- Maintenance Workflow
-- Fuel & Expense Tracking
-- Reports & Analytics
-- Business Rule Validation
+- Passport JWT
+- Swagger
+- TypeScript
 
 ---
 
-## ⚙️ Setup & Run
+# 🚀 Getting Started
 
-### Prerequisites
+## Prerequisites
+
 - Node.js 20+
 - pnpm
-- Docker (for PostgreSQL)
+- Docker
 
-### 1. Start Database
+---
+
+## 1. Start Database
 
 ```bash
 docker compose up -d
 ```
 
-### 2. Backend Setup
+---
+
+## 2. Backend Setup
 
 ```bash
 cd backend
+
 pnpm install
+
 npx prisma migrate deploy
+
 pnpm prisma:seed
+
 pnpm start:dev
 ```
 
-Backend runs on: http://localhost:3000
+Backend runs on:
 
-### 3. Frontend Setup
+```
+http://localhost:3000
+```
+
+Swagger Documentation (if enabled):
+
+```
+http://localhost:3000/api
+```
+
+---
+
+## 3. Frontend Setup
 
 ```bash
 cd frontend
+
 pnpm install
+
 pnpm dev
 ```
 
-Frontend runs on: http://localhost:3001
+Frontend runs on:
+
+```
+http://localhost:3001
+```
 
 ---
 
-## 🔐 Environment Variables
+# 🔐 Environment Variables
 
-### Backend (.env)
-- DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fleet
-- JWT_SECRET=your_jwt_secret
-- JWT_EXPIRES_IN=7d
-- PORT=3000
-- CORS_ORIGIN=http://localhost:3001,http://localhost:3000
+## Backend (.env)
 
-### Frontend (.env.local)
-- NEXT_PUBLIC_API_URL=http://localhost:3000
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fleet
+
+JWT_SECRET=your_jwt_secret
+
+JWT_EXPIRES_IN=7d
+
+PORT=3000
+
+CORS_ORIGIN=http://localhost:3001,http://localhost:3000
+```
+
+## Frontend (.env.local)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
 
 ---
 
-## 🧩 API / Backend Modules
-
-The backend currently registers these modules:
+# 🧩 Backend Modules
 
 - AuthModule
 - UsersModule
@@ -92,113 +215,96 @@ The backend currently registers these modules:
 - FuelExpensesModule
 - ReportsModule
 
-### Core API Endpoints
-
-#### Authentication
-- POST /auth/login
-- GET /auth/me
-
-#### Vehicles
-- GET /vehicles
-- GET /vehicles/dispatch-pool
-- GET /vehicles/:id
-- POST /vehicles
-- PATCH /vehicles/:id
-- DELETE /vehicles/:id
-
-#### Drivers
-- GET /drivers
-- GET /drivers/dispatch-pool
-- GET /drivers/expiring-licenses
-- GET /drivers/:id
-- POST /drivers
-- PATCH /drivers/:id
-
-#### Trips
-- POST /trips
-- GET /trips
-- GET /trips/counts
-- GET /trips/active
-- GET /trips/pending
-- GET /trips/:id
-- PATCH /trips/:id
-- POST /trips/:id/dispatch
-- POST /trips/:id/complete
-- POST /trips/:id/cancel
-
-#### Maintenance
-- GET /maintenance
-- GET /maintenance/:id
-- POST /maintenance
-- PATCH /maintenance/:id
-- PATCH /maintenance/:id/close
-
-#### Fuel & Expenses
-- POST /fuel-expenses/fuel
-- GET /fuel-expenses/fuel
-- PATCH /fuel-expenses/fuel/:id
-- POST /fuel-expenses/expenses
-- GET /fuel-expenses/expenses
-- PATCH /fuel-expenses/expenses/:id
-- GET /fuel-expenses/vehicle/:vehicleId/operational-cost
-- GET /fuel-expenses/vehicle/:vehicleId/fuel-efficiency
-
-#### Reports
-- GET /reports/dashboard
-- GET /reports/analytics
-- GET /reports/export/csv
-
 ---
 
-## 🏗️ System Modules
+# 📡 Core API Endpoints
 
-### Vehicle Management
-- Register and manage fleet vehicles
-- Track vehicle status
-- Monitor load capacity and odometer
-
-### Driver Management
-- Maintain driver profiles
-- License validation
-- Safety score tracking
-
-### Trip Management
-- Create and manage transport trips
-- Vehicle and driver assignment
-- Automatic status transitions
-
-### Maintenance
-- Schedule maintenance records
-- Vehicle availability management
-
-### Fuel & Expense
-- Record fuel logs
-- Track operational expenses
-- Calculate total operating costs
-
-### Dashboard & Analytics
-- Fleet utilization
-- Active trips
-- Operational costs
-- Fuel efficiency
-- Vehicle ROI
-
----
-
-## 📂 Project Structure
+## Authentication
 
 ```
-transitops/
-├── frontend/      # Next.js Application
-├── backend/       # NestJS API
-└── README.md
+POST /auth/login
+GET  /auth/me
+```
+
+## Vehicles
+
+```
+GET    /vehicles
+GET    /vehicles/dispatch-pool
+GET    /vehicles/:id
+POST   /vehicles
+PATCH  /vehicles/:id
+DELETE /vehicles/:id
+```
+
+## Drivers
+
+```
+GET    /drivers
+GET    /drivers/dispatch-pool
+GET    /drivers/expiring-licenses
+GET    /drivers/:id
+POST   /drivers
+PATCH  /drivers/:id
+```
+
+## Trips
+
+```
+POST   /trips
+GET    /trips
+GET    /trips/counts
+GET    /trips/active
+GET    /trips/pending
+GET    /trips/:id
+
+PATCH  /trips/:id
+
+POST   /trips/:id/dispatch
+POST   /trips/:id/complete
+POST   /trips/:id/cancel
+```
+
+## Maintenance
+
+```
+GET    /maintenance
+GET    /maintenance/:id
+
+POST   /maintenance
+
+PATCH  /maintenance/:id
+PATCH  /maintenance/:id/close
+```
+
+## Fuel & Expenses
+
+```
+POST   /fuel-expenses/fuel
+GET    /fuel-expenses/fuel
+PATCH  /fuel-expenses/fuel/:id
+
+POST   /fuel-expenses/expenses
+GET    /fuel-expenses/expenses
+PATCH  /fuel-expenses/expenses/:id
+
+GET /fuel-expenses/vehicle/:vehicleId/operational-cost
+GET /fuel-expenses/vehicle/:vehicleId/fuel-efficiency
+```
+
+## Reports
+
+```
+GET /reports/dashboard
+GET /reports/analytics
+GET /reports/export/csv
 ```
 
 ---
 
-## 🗄️ Database Overview
+# 🗄 Database Design
 
-The system is designed around the following core entities:
+## Core Entities
 
 - Users
 - Vehicles
@@ -208,46 +314,53 @@ The system is designed around the following core entities:
 - Fuel Logs
 - Expenses
 
-These entities are connected through relational mappings to support fleet operations and enforce business rules.
+The schema is implemented using **Prisma ORM**, providing type-safe relational database access.
+
+### Relationships
+
+- A User creates Trips and Maintenance records.
+- A Vehicle participates in multiple Trips.
+- A Driver can complete multiple Trips over time.
+- A Vehicle has multiple Maintenance records.
+- A Vehicle has multiple Fuel Logs.
+- A Vehicle has multiple Expense records.
 
 ---
-## 🗃️ Database Design
 
-The backend database is designed using a relational schema centered around the following entities:
+# 📂 Project Structure
 
-- **User** – Authentication, authorization, and role management.
-- **Vehicle** – Vehicle registration, specifications, status, and operational details.
-- **Driver** – Driver information, license details, safety score, and availability.
-- **Trip** – Source, destination, assigned vehicle, assigned driver, cargo details, trip status, and revenue.
-- **Maintenance** – Vehicle maintenance history, cost, schedule, and maintenance status.
-- **Fuel Log** – Fuel consumption, odometer readings, and fuel costs.
-- **Expense** – Vehicle-related operational expenses.
+```text
+transitops/
+├── frontend/      # Next.js Application
+├── backend/       # NestJS API
+└── README.md
+```
 
-### Entity Relationships
+---
 
-- A **User** creates Trips and Maintenance records.
-- A **Vehicle** can participate in multiple Trips.
-- A **Driver** can be assigned to multiple Trips over time.
-- A **Vehicle** has multiple Maintenance records.
-- A **Vehicle** has multiple Fuel Logs.
-- A **Vehicle** has multiple Expense records.
-
-The schema is implemented using **Prisma ORM**, providing type-safe database access and relational data management.
-
-## 👥 Team Workflow
+# 👥 Team Workflow
 
 - Feature-based Git branches
 - Pull Requests into `develop`
-- Hourly commits during hackathon development
+- Collaborative module development
+- Frequent commits during the hackathon
 
-### Team Contribution Summary
+## Team Contribution Summary
 
-- Mayuri: Fleet and Trip modules (frontend views and API integration)
-- Saichandana: Drivers, Maintenance, Fuel & Expenses, Analytics, Settings & RBAC
-- Backend: Shared module-wise collaboration with Reports/Analytics APIs added in latest merge
+| Member | Contribution |
+|---------|--------------|
+| **Mayuri** | Fleet Management, Trip Management, Frontend Views, API Integration |
+| **Saichandana** | Driver Management, Maintenance, Fuel & Expenses, Reports & Analytics, Settings & RBAC |
+| **Backend Team** | Shared collaboration across backend modules and Reports APIs |
 
 ---
 
-## 🎯 Objective
+# 🎯 Objective
 
-Build a scalable transport operations platform that streamlines fleet management while ensuring operational efficiency through automated workflows, business validations, and analytics.
+TransitOps modernizes transport operations by replacing fragmented manual processes with a centralized digital platform. Through workflow automation, business rule validation, and operational analytics, it helps organizations improve fleet utilization, reduce scheduling conflicts, ensure compliance, and make better operational decisions.
+
+---
+
+## ❤️ Built for Odoo Hackathon 2026
+
+**TransitOps — Smart Fleet Management for Modern Logistics**
